@@ -161,7 +161,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     _bandwidthBuffer.send(message);
 
     // async send message to the server
-    _service.send(message);
+    _service.sendPost(message);
   }
 
   /// 'outgoing message sent to the server' event

@@ -154,7 +154,9 @@ class ChatService {
     if (_userId != null) {
       grpc.ChatRoomServiceClient(_getSender())
           .logout(grpc.Registration(userId: _userId))
-          .catchError((e) {
+          .then((_) {
+        debugPrint('successfully logged out from the server');
+      }).catchError((e) {
         debugPrint('failed to logout fronm the server');
       });
     }
@@ -324,11 +326,11 @@ class ChatService {
   }
 
   /// Send message to the server
-  void send(MessageOutgoing message) {
+  void sendPost(MessageOutgoing message) {
     if (_userId == null) {
       Future.delayed(Duration(seconds: 10), () {
         if (!_isShutdown) {
-          send(message);
+          sendPost(message);
         }
       });
     } else {
@@ -343,44 +345,5 @@ class ChatService {
         }
       });
     }
-    if (_clientSend == null) {
-      // create new client
-      _clientSend = ClientChannel(
-        serverIP, // Your IP here or localhost
-        port: serverPort,
-        options: ChannelOptions(
-          //TODO: Change to secure with server certificates
-          credentials: ChannelCredentials.insecure(),
-          idleTimeout: Duration(seconds: 10),
-        ),
-      );
-    }
-
-    //todo: implement sending message
-    // grpc.ChatServiceClient(_clientSend).send(request).then((_) {
-    //   // call for success handler
-    //   if (onSentSuccess != null) {
-    //     var sentMessage = MessageOutgoing(
-    //         text: message.text,
-    //         id: message.id,
-    //         status: MessageOutgoingStatus.SENT);
-    //     onSentSuccess(sentMessage);
-    //   }
-    // }).catchError((e) {
-    //   if (!_isShutdown) {
-    //     // invalidate current client
-    //     _shutdownSend();
-
-    //     // call for error handler
-    //     if (onSentError != null) {
-    //       onSentError(message, e.toString());
-    //     }
-
-    //     // try to send again
-    //     Future.delayed(Duration(seconds: 30), () {
-    //       send(message);
-    //     });
-    //   }
-    // });
   }
 }
