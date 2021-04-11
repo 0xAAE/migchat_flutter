@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 
 import 'bandwidth_buffer.dart';
 import 'chat_message.dart';
@@ -47,11 +48,15 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     // initialize Chat client service
     _service = ChatService(
-        onSentSuccess: onSentSuccess,
-        onSentError: onSentError,
-        onReceivedSuccess: onReceivedSuccess,
-        onReceivedError: onReceivedError);
-    _service.startListening();
+        onSendPostOk: onSendPostOk,
+        onSendPostError: onSendPostError,
+        onUsersUpdated: onUsersUpdated,
+        onInvitation: onInvitation,
+        onChatsUpdated: onChatsUpdated,
+        onPost: onPost,
+        onRecvError: onRecvError,
+        name: 'Alexander',
+        shortName: '0xAAE');
   }
 
   @override
@@ -160,28 +165,54 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   /// 'outgoing message sent to the server' event
-  void onSentSuccess(MessageOutgoing message) {
+  void onSendPostOk(MessageOutgoing message) {
     debugPrint("message \"${message.text}\" sent to the server");
     // send updated message to the display stream through the bandwidth buffer
     _bandwidthBuffer.send(message);
   }
 
   /// 'failed to send message' event
-  void onSentError(Message message, String error) {
+  void onSendPostError(Message message, String error) {
     debugPrint(
         "FAILED to send message \"${message.text}\" to the server: $error");
   }
 
-  /// 'new incoming message received from the server' event
-  void onReceivedSuccess(Message message) {
-    debugPrint("received message from the server: ${message.text}");
-    // send updated message to the display stream through the bandwidth buffer
-    _bandwidthBuffer.send(message);
+  void onUsersUpdated(UpdateUsers update) {
+    for (var user in update.added) {
+      debugPrint(
+          "user has registered on the server: ${user.shortName} (${user.name})");
+    }
+    for (var user in update.gone) {
+      debugPrint(
+          "user has gone from the server: ${user.shortName} (${user.name})");
+    }
+  }
+
+  void onChatsUpdated(UpdateChats update) {
+    for (var chat in update.added) {
+      debugPrint(
+          "new ${chat.permanent ? 'permanent' : ''} chat has been created: ${chat.description}");
+    }
+    for (var chat in update.gone) {
+      debugPrint("chat has been deleted: ${chat.description}");
+    }
+  }
+
+  void onInvitation(Invitation invitation) {
+    debugPrint(
+        "invitation received from ${invitation.fromUserId} to ${invitation.chatId}");
   }
 
   /// 'failed to receive messages' event
-  void onReceivedError(String error) {
+  void onRecvError(String error) {
     debugPrint("FAILED to receive messages from the server: $error");
+  }
+
+  /// 'new incoming message received from the server' event
+  void onPost(Post post) {
+    debugPrint("received post from the server: ${post.text}");
+    // send updated message to the display stream through the bandwidth buffer
+    _bandwidthBuffer.send(Message(post.text));
   }
 
   /// this event means 'the message (or messages) can be displayed'
