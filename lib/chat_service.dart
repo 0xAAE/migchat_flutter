@@ -157,7 +157,7 @@ class ChatService {
           .then((_) {
         debugPrint('successfully logged out from the server');
       }).catchError((e) {
-        debugPrint('failed to logout fronm the server');
+        debugPrint('failed to logout from the server');
       });
     }
     _isShutdown = true;

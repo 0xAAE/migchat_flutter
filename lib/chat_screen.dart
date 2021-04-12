@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 
 import 'bandwidth_buffer.dart';
+import 'chat_model.dart';
+import 'chat_widget.dart';
 import 'chat_message.dart';
 import 'chat_message_incoming.dart';
 import 'chat_message_outgoing.dart';
@@ -26,14 +28,27 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late BandwidthBuffer _bandwidthBuffer;
 
   /// Stream controller to add messages to the ListView
-  final StreamController _streamController = StreamController<List<Message>>();
+  final StreamController _postsStreamController =
+      StreamController<List<Message>>();
 
   /// Chat messages list to display into ListView
-  final List<ChatMessage> _messages = <ChatMessage>[];
+  final List<ChatMessage> _posts = <ChatMessage>[];
 
   /// Look at the https://codelabs.developers.google.com/codelabs/flutter/#4
   final TextEditingController _textController = TextEditingController();
   bool _isComposing = false;
+
+  final StreamController _usersStreamController =
+      StreamController<List<User>>();
+  final List<User> _users = <User>[];
+
+  final StreamController _chatsStreamController =
+      StreamController<List<Chat>>();
+  final List<ChatWidget> _chats = <ChatWidget>[];
+
+  final StreamController _invitationsStreamController =
+      StreamController<Invitation>();
+  final List<Invitation> _invitations = <Invitation>[];
 
   @override
   void initState() {
@@ -68,8 +83,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     _bandwidthBuffer.stop();
 
     // free UI resources
-    for (ChatMessage message in _messages)
-      message.animationController.dispose();
+    for (ChatMessage message in _posts) message.animationController.dispose();
     super.dispose();
   }
 
@@ -81,7 +95,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         children: <Widget>[
           Flexible(
             child: StreamBuilder<List<Message>>(
-              stream: _streamController.stream as Stream<List<Message>>,
+              stream: _postsStreamController.stream as Stream<List<Message>>,
               builder: (BuildContext context, AsyncSnapshot snapshot) {
                 if (snapshot.hasError) {
                   return Text("Error: ${snapshot.error}");
@@ -97,11 +111,34 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 return ListView.builder(
                     padding: EdgeInsets.all(8.0),
                     reverse: true,
-                    itemBuilder: (_, int index) => _messages[index],
-                    itemCount: _messages.length);
+                    itemBuilder: (_, int index) => _posts[index],
+                    itemCount: _posts.length);
               },
             ),
           ),
+          Divider(height: 1.0),
+          Flexible(
+              child: StreamBuilder<List<Chat>>(
+            stream: _chatsStreamController as Stream<List<Chat>>,
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              if (snapshot.hasError) {
+                return Text("Error: ${snapshot.error}");
+              }
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                case ConnectionState.waiting:
+                  break;
+                case ConnectionState.active:
+                case ConnectionState.done:
+                  _addChats(snapshot.data);
+              }
+              return ListView.builder(
+                  padding: EdgeInsets.all(8.0),
+                  reverse: true,
+                  itemBuilder: (_, int index) => _chats[index],
+                  itemCount: _chats.length);
+            },
+          )),
           Divider(height: 1.0),
           Container(
             decoration: BoxDecoration(color: Theme.of(context).cardColor),
@@ -181,6 +218,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     for (var user in update.added) {
       debugPrint(
           "user has registered on the server: ${user.shortName} (${user.name})");
+      _usersStreamController.add(update.added);
     }
     for (var user in update.gone) {
       debugPrint(
@@ -192,6 +230,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     for (var chat in update.added) {
       debugPrint(
           "new ${chat.permanent ? 'permanent' : ''} chat has been created: ${chat.description}");
+      _chatsStreamController.add(update.added);
     }
     for (var chat in update.gone) {
       debugPrint("chat has been deleted: ${chat.description}");
@@ -201,6 +240,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void onInvitation(Invitation invitation) {
     debugPrint(
         "invitation received from ${invitation.fromUserId} to ${invitation.chatId}");
+    _invitationsStreamController.add(invitation);
   }
 
   /// 'failed to receive messages' event
@@ -219,7 +259,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   /// Look at the https://github.com/flutter/flutter/issues/26375
   void onReceivedFromBuffer(List<Message> messages) {
     // send message(s) to the ListView stream
-    _streamController.add(messages);
+    _postsStreamController.add(messages);
   }
 
   /// this methods is called to display new (outgoing or incoming) message or
@@ -227,10 +267,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void _addMessages(List<Message> messages) {
     messages.forEach((message) {
       // check if message with the same ID is already existed
-      var i = _messages.indexWhere((msg) => msg.message.id == message.id);
+      var i = _posts.indexWhere((msg) => msg.message.id == message.id);
       if (i != -1) {
         // found
-        var chatMessage = _messages[i];
+        var chatMessage = _posts[i];
         if (chatMessage is ChatMessageOutgoing) {
           assert(message is MessageOutgoing,
               "message must be MessageOutcome type");
@@ -260,10 +300,33 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             );
             break;
         }
-        _messages.insert(0, chatMessage);
+        _posts.insert(0, chatMessage);
 
         // look at the https://codelabs.developers.google.com/codelabs/flutter/#6
         chatMessage.animationController.forward();
+      }
+    });
+  }
+
+  void _addChats(List<Chat> chats) {
+    chats.forEach((chat) {
+      var model = ChatModel.from(chat);
+      // check if message with the same ID is already existed
+      var i = _chats.indexWhere((item) => item.model.id == model.id);
+      if (i != -1) {
+        // found
+        _chats[i].model = model;
+      } else {
+        // new message
+        var widget = ChatWidget(
+            animationController: AnimationController(
+              duration: Duration(milliseconds: 700),
+              vsync: this,
+            ),
+            model: model);
+        _chats.insert(0, widget);
+        // look at the https://codelabs.developers.google.com/codelabs/flutter/#6
+        widget.animationController.forward();
       }
     });
   }
