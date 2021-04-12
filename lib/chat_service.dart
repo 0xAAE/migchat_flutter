@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:grpc/grpc.dart';
 
 import 'proto/generated/migchat.pbgrpc.dart' as grpc;
-import 'chat_message.dart';
 import 'chat_message_outgoing.dart';
 
 /// CHANGE TO IP ADDRESS OF YOUR SERVER IF IT IS NECESSARY

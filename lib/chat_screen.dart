@@ -10,6 +10,9 @@ import 'chat_message.dart';
 import 'chat_message_incoming.dart';
 import 'chat_message_outgoing.dart';
 import 'chat_service.dart';
+import 'invitation_model.dart';
+import 'user_model.dart';
+import 'user_widget.dart';
 
 /// Host screen widget - main window
 class ChatScreen extends StatefulWidget {
@@ -40,7 +43,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   final StreamController _usersStreamController =
       StreamController<List<User>>();
-  final List<User> _users = <User>[];
+  final List<UserWidget> _users = <UserWidget>[];
 
   final StreamController _chatsStreamController =
       StreamController<List<Chat>>();
@@ -48,7 +51,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   final StreamController _invitationsStreamController =
       StreamController<Invitation>();
-  final List<Invitation> _invitations = <Invitation>[];
 
   @override
   void initState() {
@@ -137,6 +139,29 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   reverse: true,
                   itemBuilder: (_, int index) => _chats[index],
                   itemCount: _chats.length);
+            },
+          )),
+          Divider(height: 1.0),
+          Flexible(
+              child: StreamBuilder<List<User>>(
+            stream: _usersStreamController as Stream<List<User>>,
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              if (snapshot.hasError) {
+                return Text("Error: ${snapshot.error}");
+              }
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                case ConnectionState.waiting:
+                  break;
+                case ConnectionState.active:
+                case ConnectionState.done:
+                  _addUsers(snapshot.data.added);
+              }
+              return ListView.builder(
+                  padding: EdgeInsets.all(8.0),
+                  reverse: true,
+                  itemBuilder: (_, int index) => _users[index],
+                  itemCount: _users.length);
             },
           )),
           Divider(height: 1.0),
@@ -325,6 +350,29 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
             model: model);
         _chats.insert(0, widget);
+        // look at the https://codelabs.developers.google.com/codelabs/flutter/#6
+        widget.animationController.forward();
+      }
+    });
+  }
+
+  void _addUsers(List<User> users) {
+    users.forEach((user) {
+      var model = UserModel.from(user);
+      // check if message with the same ID is already existed
+      var i = _users.indexWhere((item) => item.model.id == model.id);
+      if (i != -1) {
+        // found
+        _users[i].model = model;
+      } else {
+        // new message
+        var widget = UserWidget(
+            animationController: AnimationController(
+              duration: Duration(milliseconds: 700),
+              vsync: this,
+            ),
+            model: model);
+        _users.insert(0, widget);
         // look at the https://codelabs.developers.google.com/codelabs/flutter/#6
         widget.animationController.forward();
       }
