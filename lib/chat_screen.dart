@@ -92,83 +92,101 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Friendlychat")),
-      body: Column(
+      appBar: AppBar(title: Text("MiGChat")),
+      body: Row(
         children: <Widget>[
+          // users + chats
           Flexible(
-            child: StreamBuilder<List<Message>>(
-              stream: _postsStreamController.stream as Stream<List<Message>>,
-              builder: (BuildContext context, AsyncSnapshot snapshot) {
-                if (snapshot.hasError) {
-                  return Text("Error: ${snapshot.error}");
-                }
-                switch (snapshot.connectionState) {
-                  case ConnectionState.none:
-                  case ConnectionState.waiting:
-                    break;
-                  case ConnectionState.active:
-                  case ConnectionState.done:
-                    _addMessages(snapshot.data);
-                }
-                return ListView.builder(
-                    padding: EdgeInsets.all(8.0),
-                    reverse: true,
-                    itemBuilder: (_, int index) => _posts[index],
-                    itemCount: _posts.length);
-              },
-            ),
+            child: Column(children: [
+              // users
+              Flexible(
+                  child: StreamBuilder<List<User>>(
+                stream: _usersStreamController.stream as Stream<List<User>>,
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.hasError) {
+                    return Text("Error: ${snapshot.error}");
+                  }
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.none:
+                    case ConnectionState.waiting:
+                      break;
+                    case ConnectionState.active:
+                    case ConnectionState.done:
+                      _addUsers(snapshot.data);
+                  }
+                  return ListView.builder(
+                      padding: EdgeInsets.all(8.0),
+                      reverse: true,
+                      itemBuilder: (_, int index) => _users[index],
+                      itemCount: _users.length);
+                },
+              )),
+              // -----------
+              Divider(height: 1.0),
+              // chats
+              Flexible(
+                  child: StreamBuilder<List<Chat>>(
+                stream: _chatsStreamController.stream as Stream<List<Chat>>,
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.hasError) {
+                    return Text("Error: ${snapshot.error}");
+                  }
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.none:
+                    case ConnectionState.waiting:
+                      break;
+                    case ConnectionState.active:
+                    case ConnectionState.done:
+                      _addChats(snapshot.data);
+                  }
+                  return ListView.builder(
+                      padding: EdgeInsets.all(8.0),
+                      reverse: true,
+                      itemBuilder: (_, int index) => _chats[index],
+                      itemCount: _chats.length);
+                },
+              )),
+            ]),
           ),
-          Divider(height: 1.0),
-          Flexible(
-              child: StreamBuilder<List<Chat>>(
-            stream: _chatsStreamController as Stream<List<Chat>>,
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              if (snapshot.hasError) {
-                return Text("Error: ${snapshot.error}");
-              }
-              switch (snapshot.connectionState) {
-                case ConnectionState.none:
-                case ConnectionState.waiting:
-                  break;
-                case ConnectionState.active:
-                case ConnectionState.done:
-                  _addChats(snapshot.data);
-              }
-              return ListView.builder(
-                  padding: EdgeInsets.all(8.0),
-                  reverse: true,
-                  itemBuilder: (_, int index) => _chats[index],
-                  itemCount: _chats.length);
-            },
-          )),
-          Divider(height: 1.0),
-          Flexible(
-              child: StreamBuilder<List<User>>(
-            stream: _usersStreamController as Stream<List<User>>,
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              if (snapshot.hasError) {
-                return Text("Error: ${snapshot.error}");
-              }
-              switch (snapshot.connectionState) {
-                case ConnectionState.none:
-                case ConnectionState.waiting:
-                  break;
-                case ConnectionState.active:
-                case ConnectionState.done:
-                  _addUsers(snapshot.data.added);
-              }
-              return ListView.builder(
-                  padding: EdgeInsets.all(8.0),
-                  reverse: true,
-                  itemBuilder: (_, int index) => _users[index],
-                  itemCount: _users.length);
-            },
-          )),
-          Divider(height: 1.0),
-          Container(
-            decoration: BoxDecoration(color: Theme.of(context).cardColor),
-            child: _buildTextComposer(),
-          ),
+          // ------------------
+          VerticalDivider(width: 1.0),
+          // posts + composer
+          Expanded(
+              flex: 4,
+              child: Column(children: [
+                // posts
+                Flexible(
+                  child: StreamBuilder<List<Message>>(
+                    stream:
+                        _postsStreamController.stream as Stream<List<Message>>,
+                    builder: (BuildContext context, AsyncSnapshot snapshot) {
+                      if (snapshot.hasError) {
+                        return Text("Error: ${snapshot.error}");
+                      }
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.none:
+                        case ConnectionState.waiting:
+                          break;
+                        case ConnectionState.active:
+                        case ConnectionState.done:
+                          _addMessages(snapshot.data);
+                      }
+                      return ListView.builder(
+                          padding: EdgeInsets.all(8.0),
+                          reverse: true,
+                          itemBuilder: (_, int index) => _posts[index],
+                          itemCount: _posts.length);
+                    },
+                  ),
+                ),
+                // --------------------
+                Divider(height: 1.0),
+                // message composer
+                Container(
+                  decoration: BoxDecoration(color: Theme.of(context).cardColor),
+                  child: _buildTextComposer(),
+                ),
+              ])),
         ],
       ),
     );

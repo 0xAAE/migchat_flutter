@@ -9,7 +9,7 @@ class UserModel {
 
   /// Class constructor
   UserModel.from(User user) {
-    id = user.userId as int;
+    id = user.userId.toInt();
     name = user.name;
     shortName = user.shortName;
   }
