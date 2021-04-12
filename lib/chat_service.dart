@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:grpc/grpc.dart';
 
 import 'proto/generated/migchat.pbgrpc.dart' as grpc;
-import 'chat_message_outgoing.dart';
+import 'post_model.dart';
 
 /// CHANGE TO IP ADDRESS OF YOUR SERVER IF IT IS NECESSARY
 const serverIP = "127.0.0.1";
@@ -34,8 +34,8 @@ class ChatService {
 
   // send methods
 
-  final void Function(MessageOutgoing message) onSendPostOk;
-  final void Function(MessageOutgoing message, String error) onSendPostError;
+  final void Function(OutgoingPostModel model) onSendPostOk;
+  final void Function(OutgoingPostModel model, String error) onSendPostError;
 
   // receive streams methods
 
@@ -325,22 +325,48 @@ class ChatService {
   }
 
   /// Send message to the server
-  void sendPost(MessageOutgoing message) {
+  void sendPost(OutgoingPostModel model) {
     if (_userId == null) {
-      Future.delayed(Duration(seconds: 10), () {
+      Future.delayed(Duration(seconds: 30), () {
         if (!_isShutdown) {
-          sendPost(message);
+          sendPost(model);
         }
       });
     } else {
-      var post = grpc.Post(userId: _userId, chatId: 0, text: message.text);
+      var post = grpc.Post(userId: _userId, chatId: 0, text: model.text);
       grpc.ChatRoomServiceClient(_getSender()).createPost(post).then((_) {
-        message.status = MessageOutgoingStatus.SENT;
-        onSendPostOk(message);
+        model.status = PostStatus.SENT;
+        onSendPostOk(model);
       }).catchError((e) {
         if (!_isShutdown) {
-          message.status = MessageOutgoingStatus.RETRYING;
-          onSendPostError(message, e.toString());
+          model.status = PostStatus.RETRYING;
+          onSendPostError(model, e.toString());
+          Future.delayed(Duration(seconds: 30), () {
+            if (!_isShutdown) {
+              sendPost(model);
+            }
+          });
+        }
+      });
+    }
+  }
+
+  void enterChat(int chatId) {
+    if (_userId == null) {
+      Future.delayed(Duration(seconds: 30), () {
+        if (!_isShutdown) {
+          enterChat(chatId);
+        }
+      });
+    } else {
+      var ref = grpc.ChatReference(chatId: chatId, userId: _userId);
+      grpc.ChatRoomServiceClient(_getSender()).enterChat(ref).catchError((e) {
+        if (!_isShutdown) {
+          Future.delayed(Duration(seconds: 30), () {
+            if (!_isShutdown) {
+              enterChat(chatId);
+            }
+          });
         }
       });
     }

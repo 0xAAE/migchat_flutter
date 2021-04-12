@@ -5,7 +5,7 @@ import 'user_model.dart';
 /// ChatMessageIncoming is widget to display incoming from server message
 class UserWidget extends StatelessWidget implements UserViewModel {
   /// Incoming message content
-  UserModel model;
+  final UserModel model;
 
   /// Controller of animation for message widget
   final AnimationController animationController;
@@ -25,9 +25,15 @@ class UserWidget extends StatelessWidget implements UserViewModel {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
+            Container(
+              margin: EdgeInsets.only(right: 8.0),
+              child: CircleAvatar(
+                  backgroundColor: Colors.blueGrey.shade600,
+                  child: Text(model.name[0])),
+            ),
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(model.shortName,
                       style: Theme.of(context).textTheme.subtitle1),
@@ -37,12 +43,6 @@ class UserWidget extends StatelessWidget implements UserViewModel {
                   ),
                 ],
               ),
-            ),
-            Container(
-              margin: EdgeInsets.only(left: 16.0),
-              child: CircleAvatar(
-                  backgroundColor: Colors.blueGrey.shade600,
-                  child: Text(model.name[0])),
             ),
           ],
         ),

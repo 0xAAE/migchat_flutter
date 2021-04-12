@@ -3,19 +3,20 @@ import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 import 'package:migchat_flutter/user_model.dart';
 import 'invitation_model.dart';
 
-/// Message is class defining message data (id and text)
 class ChatModel {
-  int id = 0;
-  bool permanent = false;
-  String description = '';
-  List<String> users = <String>[];
-  List<InvitationModel> invitations = <InvitationModel>[];
+  int id;
+  bool permanent;
+  String description;
+  List<String> users;
+  List<InvitationModel> invitations;
 
   /// Class constructor
-  ChatModel.from(Chat chat) {
-    id = chat.chatId;
-    permanent = chat.permanent;
-    description = chat.description;
+  ChatModel.from(Chat chat)
+      : id = chat.chatId,
+        permanent = chat.permanent,
+        description = chat.description,
+        users = <String>[],
+        invitations = <InvitationModel>[] {
     for (var userId in chat.users) {
       users.add(userId.toString());
     }
@@ -24,13 +25,13 @@ class ChatModel {
   invitedBy(UserModel user) {
     invitations.add(InvitationModel(from: user.shortName));
   }
+
+  String get members => users.join(', ');
 }
 
-/// ChatMessage is base abstract class for outgoing and incoming message widgets
 abstract class ChatViewModel extends Widget {
-  /// Message content
   ChatModel get model;
 
-  /// Controller of animation for message widget
+  /// Controller of animation for widget
   AnimationController get animationController;
 }

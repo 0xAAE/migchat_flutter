@@ -1,92 +1,71 @@
 import 'package:flutter/material.dart';
 
-import 'chat_message.dart';
+import 'post_model.dart';
 
 /// Outgoing message author name
 const String _name = "Me";
 
-/// Outgoing message statuses
-/// UNKNOWN - message just created and is not sent yet
-/// SENT - message is sent to the server successfully
-enum MessageOutgoingStatus { UNKNOWN, SENT, RETRYING }
-
-/// MessageOutgoing is class defining message data (id and text) and status
-class MessageOutgoing extends Message {
-  /// Outgoing message status
-  MessageOutgoingStatus status;
-
-  /// Constructor
-  MessageOutgoing(
-      {required String text,
-      required String id,
-      this.status = MessageOutgoingStatus.UNKNOWN})
-      : super(text, id);
-}
-
 /// ChatMessageOutgoingController is 'Controller' class that allows change message properties
-class ChatMessageOutgoingController {
+class OutgoingPostController {
   /// Outgoing message content
-  MessageOutgoing message;
+  OutgoingPostModel model;
 
   /// Controller raises this event when status has been changed
-  late void Function(
-          MessageOutgoingStatus oldStatus, MessageOutgoingStatus newStatus)
+  late void Function(PostStatus oldStatus, PostStatus newStatus)
       onStatusChanged;
 
   /// Constructor
-  ChatMessageOutgoingController({required this.message});
+  OutgoingPostController({required this.model});
 
   /// setStatus is method to update status of the outgoing message
   /// It raises onStatusChanged event
-  void setStatus(MessageOutgoingStatus newStatus) {
-    var oldStatus = message.status;
+  void setStatus(PostStatus newStatus) {
+    var oldStatus = model.status;
     if (oldStatus != newStatus) {
-      message.status = newStatus;
+      model.status = newStatus;
       onStatusChanged(oldStatus, newStatus);
     }
   }
 }
 
 /// ChatMessageOutgoing is widget to display outgoing to server message
-class ChatMessageOutgoing extends StatefulWidget implements ChatMessage {
+class OutgoingPostWidget extends StatefulWidget implements PostViewModel {
   /// Outgoing message content
-  final MessageOutgoing message;
+  final OutgoingPostModel model;
 
   /// Message state controller
-  final ChatMessageOutgoingController controller;
+  final OutgoingPostController controller;
 
   /// Controller of animation for message widget
   final AnimationController animationController;
 
   /// Constructor
-  ChatMessageOutgoing(
-      {required this.message, required this.animationController})
-      : controller = ChatMessageOutgoingController(message: message),
-        super(key: new ObjectKey(message.id));
+  OutgoingPostWidget({required this.model, required this.animationController})
+      : controller = OutgoingPostController(model: model),
+        super(key: new ObjectKey(model.id));
 
   @override
-  State createState() => ChatMessageOutgoingState(
+  State createState() => OutgoingPostState(
       animationController: animationController, controller: controller);
 }
 
 /// State for ChatMessageOutgoing widget
-class ChatMessageOutgoingState extends State<ChatMessageOutgoing> {
+class OutgoingPostState extends State<OutgoingPostWidget> {
   /// Message state controller
-  final ChatMessageOutgoingController controller;
+  final OutgoingPostController controller;
 
   /// Controller of animation for message widget
   final AnimationController animationController;
 
   /// Constructor
-  ChatMessageOutgoingState(
+  OutgoingPostState(
       {required this.controller, required this.animationController}) {
     // Subscribe to event "message status has been changed"
     controller.onStatusChanged = onStatusChanged;
   }
 
   /// Subscription to event "message status has been changed"
-  void onStatusChanged(
-      MessageOutgoingStatus oldStatus, MessageOutgoingStatus newStatus) {
+  void onStatusChanged(PostStatus oldStatus, PostStatus newStatus) {
     setState(() {});
   }
 
@@ -109,19 +88,18 @@ class ChatMessageOutgoingState extends State<ChatMessageOutgoing> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(_name, style: Theme.of(context).textTheme.subhead),
+                  Text(_name, style: Theme.of(context).textTheme.subtitle1),
                   Container(
                     margin: EdgeInsets.only(top: 5.0),
-                    child: Text(controller.message.text),
+                    child: Text(controller.model.text),
                   ),
                 ],
               ),
             ),
             Container(
-              child: Icon(
-                  controller.message.status == MessageOutgoingStatus.SENT
-                      ? Icons.done
-                      : Icons.access_time),
+              child: Icon(controller.model.status == PostStatus.SENT
+                  ? Icons.done
+                  : Icons.access_time),
             ),
           ],
         ),

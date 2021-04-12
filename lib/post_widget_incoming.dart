@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 
-import 'chat_message.dart';
+import 'post_model.dart';
 
 /// Incoming message author name
 const String _server = "Server";
 
 /// ChatMessageIncoming is widget to display incoming from server message
-class ChatMessageIncoming extends StatelessWidget implements ChatMessage {
+class IncomingPostWidget extends StatelessWidget implements PostViewModel {
   /// Incoming message content
-  final Message message;
+  final PostModel model;
 
   /// Controller of animation for message widget
   final AnimationController animationController;
 
   /// Constructor
-  ChatMessageIncoming(
-      {required this.message, required this.animationController})
-      : super(key: new ObjectKey(message.id));
+  IncomingPostWidget({required this.model, required this.animationController})
+      : super(key: new ObjectKey(model.id));
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +32,10 @@ class ChatMessageIncoming extends StatelessWidget implements ChatMessage {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: <Widget>[
-                  Text(_server, style: Theme.of(context).textTheme.subhead),
+                  Text(_server, style: Theme.of(context).textTheme.subtitle1),
                   Container(
                     margin: EdgeInsets.only(top: 5.0),
-                    child: Text(message.text),
+                    child: Text(model.text),
                   ),
                 ],
               ),

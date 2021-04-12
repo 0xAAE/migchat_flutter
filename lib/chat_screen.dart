@@ -6,9 +6,9 @@ import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 import 'bandwidth_buffer.dart';
 import 'chat_model.dart';
 import 'chat_widget.dart';
-import 'chat_message.dart';
-import 'chat_message_incoming.dart';
-import 'chat_message_outgoing.dart';
+import 'post_model.dart';
+import 'post_widget_incoming.dart';
+import 'post_widget_outgoing.dart';
 import 'chat_service.dart';
 import 'invitation_model.dart';
 import 'user_model.dart';
@@ -30,12 +30,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   /// Look at the https://github.com/flutter/flutter/issues/26375
   late BandwidthBuffer _bandwidthBuffer;
 
-  /// Stream controller to add messages to the ListView
+  /// Stream controller to add posts to the ListView
   final StreamController _postsStreamController =
-      StreamController<List<Message>>();
+      StreamController<List<PostModel>>();
 
-  /// Chat messages list to display into ListView
-  final List<ChatMessage> _posts = <ChatMessage>[];
+  /// Chat posts list to display into ListView
+  final List<PostViewModel> _posts = <PostViewModel>[];
 
   /// Look at the https://codelabs.developers.google.com/codelabs/flutter/#4
   final TextEditingController _textController = TextEditingController();
@@ -56,8 +56,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    // initialize bandwidth buffer for chat messages display
-    _bandwidthBuffer = BandwidthBuffer<Message>(
+    // initialize bandwidth buffer for chat posts display
+    _bandwidthBuffer = BandwidthBuffer<PostModel>(
       duration: Duration(milliseconds: 500),
       onReceive: onReceivedFromBuffer,
     );
@@ -85,7 +85,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     _bandwidthBuffer.stop();
 
     // free UI resources
-    for (ChatMessage message in _posts) message.animationController.dispose();
+    for (PostViewModel view in _posts) view.animationController.dispose();
     super.dispose();
   }
 
@@ -156,9 +156,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               child: Column(children: [
                 // posts
                 Flexible(
-                  child: StreamBuilder<List<Message>>(
-                    stream:
-                        _postsStreamController.stream as Stream<List<Message>>,
+                  child: StreamBuilder<List<PostModel>>(
+                    stream: _postsStreamController.stream
+                        as Stream<List<PostModel>>,
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
                       if (snapshot.hasError) {
                         return Text("Error: ${snapshot.error}");
@@ -169,7 +169,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           break;
                         case ConnectionState.active:
                         case ConnectionState.done:
-                          _addMessages(snapshot.data);
+                          _addPosts(snapshot.data);
                       }
                       return ListView.builder(
                           padding: EdgeInsets.all(8.0),
@@ -181,7 +181,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 ),
                 // --------------------
                 Divider(height: 1.0),
-                // message composer
+                // post composer
                 Container(
                   decoration: BoxDecoration(color: Theme.of(context).cardColor),
                   child: _buildTextComposer(),
@@ -211,8 +211,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   });
                 },
                 onSubmitted: _isComposing ? _handleSubmitted : null,
-                decoration:
-                    InputDecoration.collapsed(hintText: "Send a message"),
+                decoration: InputDecoration.collapsed(hintText: "Send a post"),
               ),
             ),
             Container(
@@ -235,7 +234,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     _isComposing = false;
 
     // create new message from input text
-    var message = MessageOutgoing(text: text, id: '');
+    var message = OutgoingPostModel(text: text, id: '');
 
     // send message to the display stream through the bandwidth buffer
     _bandwidthBuffer.send(message);
@@ -245,14 +244,14 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   /// 'outgoing message sent to the server' event
-  void onSendPostOk(MessageOutgoing message) {
+  void onSendPostOk(OutgoingPostModel message) {
     debugPrint("message \"${message.text}\" sent to the server");
     // send updated message to the display stream through the bandwidth buffer
     _bandwidthBuffer.send(message);
   }
 
   /// 'failed to send message' event
-  void onSendPostError(Message message, String error) {
+  void onSendPostError(PostModel message, String error) {
     debugPrint(
         "FAILED to send message \"${message.text}\" to the server: $error");
   }
@@ -283,6 +282,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void onInvitation(Invitation invitation) {
     debugPrint(
         "invitation received from ${invitation.fromUserId} to ${invitation.chatId}");
+    _service.enterChat(invitation.chatId);
     _invitationsStreamController.add(invitation);
   }
 
@@ -295,50 +295,50 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void onPost(Post post) {
     debugPrint("received post from the server: ${post.text}");
     // send updated message to the display stream through the bandwidth buffer
-    _bandwidthBuffer.send(Message(post.text));
+    _bandwidthBuffer.send(PostModel.from(post));
   }
 
   /// this event means 'the message (or messages) can be displayed'
   /// Look at the https://github.com/flutter/flutter/issues/26375
-  void onReceivedFromBuffer(List<Message> messages) {
+  void onReceivedFromBuffer(List<PostModel> posts) {
     // send message(s) to the ListView stream
-    _postsStreamController.add(messages);
+    _postsStreamController.add(posts);
   }
 
   /// this methods is called to display new (outgoing or incoming) message or
   /// update status of existing outgoing message
-  void _addMessages(List<Message> messages) {
-    messages.forEach((message) {
+  void _addPosts(List<PostModel> posts) {
+    posts.forEach((model) {
       // check if message with the same ID is already existed
-      var i = _posts.indexWhere((msg) => msg.message.id == message.id);
+      var i = _posts.indexWhere((item) => item.model.id == model.id);
       if (i != -1) {
         // found
         var chatMessage = _posts[i];
-        if (chatMessage is ChatMessageOutgoing) {
-          assert(message is MessageOutgoing,
+        if (chatMessage is OutgoingPostWidget) {
+          assert(model is OutgoingPostModel,
               "message must be MessageOutcome type");
           // update status for outgoing message (from UNKNOWN to SENT)
-          chatMessage.controller.setStatus((message as MessageOutgoing).status);
+          chatMessage.controller.setStatus((model as OutgoingPostModel).status);
         }
       } else {
         // new message
-        ChatMessage chatMessage;
+        PostViewModel chatMessage;
         var animationController = AnimationController(
           duration: Duration(milliseconds: 700),
           vsync: this,
         );
-        switch (message.runtimeType) {
-          case MessageOutgoing:
+        switch (model.runtimeType) {
+          case OutgoingPostModel:
             // add new outgoing message
-            chatMessage = ChatMessageOutgoing(
-              message: message as MessageOutgoing,
+            chatMessage = OutgoingPostWidget(
+              model: model as OutgoingPostModel,
               animationController: animationController,
             );
             break;
           default:
             // add new incoming message
-            chatMessage = ChatMessageIncoming(
-              message: message,
+            chatMessage = IncomingPostWidget(
+              model: model,
               animationController: animationController,
             );
             break;
@@ -354,46 +354,47 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void _addChats(List<Chat> chats) {
     chats.forEach((chat) {
       var model = ChatModel.from(chat);
-      // check if message with the same ID is already existed
+      // new chat widget
+      var widget = ChatWidget(
+          animationController: AnimationController(
+            duration: Duration(milliseconds: 700),
+            vsync: this,
+          ),
+          model: model);
+      // check if chat widget with the same ID already exists
       var i = _chats.indexWhere((item) => item.model.id == model.id);
       if (i != -1) {
-        // found
-        _chats[i].model = model;
+        _chats.removeAt(i);
+        _chats.insert(i, widget);
       } else {
-        // new message
-        var widget = ChatWidget(
-            animationController: AnimationController(
-              duration: Duration(milliseconds: 700),
-              vsync: this,
-            ),
-            model: model);
         _chats.insert(0, widget);
-        // look at the https://codelabs.developers.google.com/codelabs/flutter/#6
-        widget.animationController.forward();
       }
+      // look at the https://codelabs.developers.google.com/codelabs/flutter/#6
+      widget.animationController.forward();
     });
   }
 
   void _addUsers(List<User> users) {
     users.forEach((user) {
       var model = UserModel.from(user);
-      // check if message with the same ID is already existed
+      // new user
+      var widget = UserWidget(
+          animationController: AnimationController(
+            duration: Duration(milliseconds: 700),
+            vsync: this,
+          ),
+          model: model);
+      // check if user widget with the same ID already exists
       var i = _users.indexWhere((item) => item.model.id == model.id);
       if (i != -1) {
         // found
-        _users[i].model = model;
+        _users.removeAt(i);
+        _users.insert(i, widget);
       } else {
-        // new message
-        var widget = UserWidget(
-            animationController: AnimationController(
-              duration: Duration(milliseconds: 700),
-              vsync: this,
-            ),
-            model: model);
         _users.insert(0, widget);
-        // look at the https://codelabs.developers.google.com/codelabs/flutter/#6
-        widget.animationController.forward();
       }
+      // look at the https://codelabs.developers.google.com/codelabs/flutter/#6
+      widget.animationController.forward();
     });
   }
 }

@@ -3,16 +3,15 @@ import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 
 /// Message is class defining message data (id and text)
 class UserModel {
-  int id = 0;
-  String name = '';
-  String shortName = '';
+  int id;
+  String name;
+  String shortName;
 
   /// Class constructor
-  UserModel.from(User user) {
-    id = user.userId.toInt();
-    name = user.name;
-    shortName = user.shortName;
-  }
+  UserModel.from(User user)
+      : id = user.userId.toInt(),
+        name = user.name,
+        shortName = user.shortName;
 }
 
 /// ChatMessage is base abstract class for outgoing and incoming message widgets
