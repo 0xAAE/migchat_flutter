@@ -52,6 +52,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final StreamController _invitationsStreamController =
       StreamController<Invitation>();
 
+  int _selectedUser = -1;
+
+  int _selectedChat = -1;
+
   @override
   void initState() {
     super.initState();
@@ -117,7 +121,25 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   return ListView.builder(
                       padding: EdgeInsets.all(8.0),
                       reverse: true,
-                      itemBuilder: (_, int index) => _users[index],
+                      itemBuilder: (_, int index) {
+                        return GestureDetector(
+                            child: _users[index],
+                            onTap: () {
+                              setState(() {
+                                if (_selectedUser != index) {
+                                  if (_selectedUser != -1) {
+                                    _users[_selectedUser].select(false);
+                                  }
+                                  _users[index].select(true);
+                                  _selectedUser = index;
+                                }
+                                if (_selectedChat != -1) {
+                                  _chats[_selectedChat].select(false);
+                                  _selectedChat = -1;
+                                }
+                              });
+                            });
+                      },
                       itemCount: _users.length);
                 },
               )),
@@ -142,7 +164,26 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   return ListView.builder(
                       padding: EdgeInsets.all(8.0),
                       reverse: true,
-                      itemBuilder: (_, int index) => _chats[index],
+                      itemBuilder: (_, int index) {
+                        return GestureDetector(
+                          child: _chats[index],
+                          onTap: () {
+                            setState(() {
+                              if (_selectedChat != index) {
+                                if (_selectedChat != -1) {
+                                  _chats[_selectedChat].select(false);
+                                }
+                                _chats[index].select(true);
+                                _selectedChat = index;
+                              }
+                              if (_selectedUser != -1) {
+                                _users[_selectedUser].select(false);
+                                _selectedUser = -1;
+                              }
+                            });
+                          },
+                        );
+                      },
                       itemCount: _chats.length);
                 },
               )),
