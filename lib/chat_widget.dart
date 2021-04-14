@@ -10,10 +10,20 @@ class ChatWidget extends StatefulWidget implements ChatViewModel {
   /// Controller of animation for message widget
   final AnimationController animationController;
 
+  final _ChatWidgetStateProxy proxy = _ChatWidgetStateProxy();
+
   /// Constructor
   ChatWidget({required this.model, required this.animationController})
       : super(key: new ObjectKey(model.id));
 
+  void select(bool on) {
+    proxy.select(on);
+  }
+
+  _ChatWidgetState createState() => _ChatWidgetState(proxy: proxy);
+}
+
+class _ChatWidgetStateProxy {
   void Function(bool sel)? onChanged;
 
   void select(bool on) {
@@ -21,21 +31,22 @@ class ChatWidget extends StatefulWidget implements ChatViewModel {
       onChanged!(on);
     }
   }
-
-  _ChatWidgetState createState() => _ChatWidgetState();
 }
 
 class _ChatWidgetState extends State<ChatWidget> {
   bool _isSelected = false;
 
+  final _ChatWidgetStateProxy proxy;
+
+  _ChatWidgetState({required this.proxy});
+
   @override
   Widget build(BuildContext context) {
-    widget.onChanged = (on) {
+    proxy.onChanged = (on) {
       setState(() {
         _isSelected = on;
       });
     };
-
     return SizeTransition(
         sizeFactor: CurvedAnimation(
             parent: widget.animationController, curve: Curves.easeOut),

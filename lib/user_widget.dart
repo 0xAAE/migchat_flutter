@@ -10,25 +10,39 @@ class UserWidget extends StatefulWidget implements UserViewModel {
   /// Controller of animation for message widget
   final AnimationController animationController;
 
+  final _UserWidgetStateProxy proxy = _UserWidgetStateProxy();
+
   /// Constructor
   UserWidget({required this.model, required this.animationController})
       : super(key: new ObjectKey(model.id));
 
   void select(bool on) {
-    onChanged!(on);
+    proxy.select(on);
   }
 
+  _UserWidgetState createState() => _UserWidgetState(proxy: proxy);
+}
+
+class _UserWidgetStateProxy {
   void Function(bool sel)? onChanged;
 
-  _UserWidgetState createState() => _UserWidgetState();
+  void select(bool on) {
+    if (onChanged != null) {
+      onChanged!(on);
+    }
+  }
 }
 
 class _UserWidgetState extends State<UserWidget> {
   bool _isSelected = false;
 
+  final _UserWidgetStateProxy proxy;
+
+  _UserWidgetState({required this.proxy});
+
   @override
   Widget build(BuildContext context) {
-    widget.onChanged = (on) {
+    proxy.onChanged = (on) {
       setState(() {
         _isSelected = on;
       });
