@@ -3,56 +3,30 @@ import 'package:flutter/material.dart';
 import 'chat_model.dart';
 
 /// ChatMessageIncoming is widget to display incoming from server message
-class ChatWidget extends StatefulWidget implements ChatViewModel {
+class ChatWidget extends StatelessWidget implements ChatViewModel {
   /// Incoming message content
   final ChatModel model;
 
   /// Controller of animation for message widget
   final AnimationController animationController;
 
-  final _ChatWidgetStateProxy proxy = _ChatWidgetStateProxy();
+  final bool isSelected;
 
   /// Constructor
-  ChatWidget({required this.model, required this.animationController})
+  ChatWidget(
+      {required this.model,
+      required this.animationController,
+      required this.isSelected})
       : super(key: new ObjectKey(model.id));
-
-  void select(bool on) {
-    proxy.select(on);
-  }
-
-  _ChatWidgetState createState() => _ChatWidgetState(proxy: proxy);
-}
-
-class _ChatWidgetStateProxy {
-  void Function(bool sel)? onChanged;
-
-  void select(bool on) {
-    if (onChanged != null) {
-      onChanged!(on);
-    }
-  }
-}
-
-class _ChatWidgetState extends State<ChatWidget> {
-  bool _isSelected = false;
-
-  final _ChatWidgetStateProxy proxy;
-
-  _ChatWidgetState({required this.proxy});
 
   @override
   Widget build(BuildContext context) {
-    proxy.onChanged = (on) {
-      setState(() {
-        _isSelected = on;
-      });
-    };
     return SizeTransition(
-        sizeFactor: CurvedAnimation(
-            parent: widget.animationController, curve: Curves.easeOut),
+        sizeFactor:
+            CurvedAnimation(parent: animationController, curve: Curves.easeOut),
         axisAlignment: 0.0,
         child: Container(
-          color: _isSelected
+          color: isSelected
               ? Theme.of(context).highlightColor
               : Theme.of(context).canvasColor,
           child: Container(
@@ -64,17 +38,17 @@ class _ChatWidgetState extends State<ChatWidget> {
                   margin: EdgeInsets.only(right: 8.0),
                   child: CircleAvatar(
                       backgroundColor: Colors.cyan.shade600,
-                      child: Text(widget.model.description[0])),
+                      child: Text(model.description[0])),
                 ),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text(widget.model.description,
+                      Text(model.description,
                           style: Theme.of(context).textTheme.subtitle1),
                       Container(
                         margin: EdgeInsets.only(top: 5.0),
-                        child: Text(widget.model.members),
+                        child: Text(model.members),
                       ),
                     ],
                   ),

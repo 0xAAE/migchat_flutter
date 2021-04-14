@@ -43,11 +43,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   final StreamController _usersStreamController =
       StreamController<List<User>>();
-  final List<UserWidget> _users = <UserWidget>[];
+  final List<UserModel> _users = <UserModel>[];
 
   final StreamController _chatsStreamController =
       StreamController<List<Chat>>();
-  final List<ChatWidget> _chats = <ChatWidget>[];
+  final List<ChatModel> _chats = <ChatModel>[];
 
   final StreamController _invitationsStreamController =
       StreamController<Invitation>();
@@ -122,22 +122,26 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       padding: EdgeInsets.all(8.0),
                       reverse: true,
                       itemBuilder: (_, int index) {
+                        var milliseconds = _selectedUser == index ? 700 : 0;
+                        var widget = UserWidget(
+                          animationController: AnimationController(
+                            duration: Duration(milliseconds: milliseconds),
+                            vsync: this,
+                          ),
+                          model: _users[index],
+                          isSelected: _selectedUser == index,
+                        );
+                        // look at the https://codelabs.developers.google.com/codelabs/flutter/#6
+                        widget.animationController.forward();
                         return GestureDetector(
-                            child: _users[index],
+                            child: widget,
                             onTap: () {
-                              setState(() {
-                                if (_selectedUser != index) {
-                                  if (_selectedUser != -1) {
-                                    _users[_selectedUser].select(false);
-                                  }
-                                  _users[index].select(true);
+                              if (_selectedUser != index) {
+                                setState(() {
                                   _selectedUser = index;
-                                }
-                                if (_selectedChat != -1) {
-                                  _chats[_selectedChat].select(false);
                                   _selectedChat = -1;
-                                }
-                              });
+                                });
+                              }
                             });
                       },
                       itemCount: _users.length);
@@ -165,21 +169,22 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       padding: EdgeInsets.all(8.0),
                       reverse: true,
                       itemBuilder: (_, int index) {
+                        var milliseconds = _selectedChat == index ? 700 : 0;
+                        var widget = ChatWidget(
+                            animationController: AnimationController(
+                              duration: Duration(milliseconds: milliseconds),
+                              vsync: this,
+                            ),
+                            model: _chats[index],
+                            isSelected: _selectedChat == index);
+                        // look at the https://codelabs.developers.google.com/codelabs/flutter/#6
+                        widget.animationController.forward();
                         return GestureDetector(
-                          child: _chats[index],
+                          child: widget,
                           onTap: () {
                             setState(() {
-                              if (_selectedChat != index) {
-                                if (_selectedChat != -1) {
-                                  _chats[_selectedChat].select(false);
-                                }
-                                _chats[index].select(true);
-                                _selectedChat = index;
-                              }
-                              if (_selectedUser != -1) {
-                                _users[_selectedUser].select(false);
-                                _selectedUser = -1;
-                              }
+                              _selectedChat = index;
+                              _selectedUser = -1;
                             });
                           },
                         );
@@ -394,48 +399,25 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   void _addChats(List<Chat> chats) {
     chats.forEach((chat) {
-      var model = ChatModel.from(chat);
-      // new chat widget
-      var widget = ChatWidget(
-          animationController: AnimationController(
-            duration: Duration(milliseconds: 700),
-            vsync: this,
-          ),
-          model: model);
       // check if chat widget with the same ID already exists
-      var i = _chats.indexWhere((item) => item.model.id == model.id);
+      var i = _chats.indexWhere((item) => item.id == chat.chatId);
       if (i != -1) {
-        _chats.removeAt(i);
-        _chats.insert(i, widget);
+        //todo: found
       } else {
-        _chats.insert(0, widget);
+        _chats.insert(0, ChatModel.from(chat));
       }
-      // look at the https://codelabs.developers.google.com/codelabs/flutter/#6
-      widget.animationController.forward();
     });
   }
 
   void _addUsers(List<User> users) {
     users.forEach((user) {
-      var model = UserModel.from(user);
-      // new user
-      var widget = UserWidget(
-          animationController: AnimationController(
-            duration: Duration(milliseconds: 700),
-            vsync: this,
-          ),
-          model: model);
       // check if user widget with the same ID already exists
-      var i = _users.indexWhere((item) => item.model.id == model.id);
+      var i = _users.indexWhere((item) => item.id == user.userId.toInt());
       if (i != -1) {
-        // found
-        _users.removeAt(i);
-        _users.insert(i, widget);
+        //todo: found
       } else {
-        _users.insert(0, widget);
+        _users.insert(0, UserModel.from(user));
       }
-      // look at the https://codelabs.developers.google.com/codelabs/flutter/#6
-      widget.animationController.forward();
     });
   }
 }
