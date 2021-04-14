@@ -7,7 +7,10 @@ class UserModel {
   String name;
   String shortName;
 
-  /// Class constructor
+  /// Class constructors
+
+  UserModel({required this.id, required this.name, required this.shortName});
+
   UserModel.from(User user)
       : id = user.userId.toInt(),
         name = user.name,

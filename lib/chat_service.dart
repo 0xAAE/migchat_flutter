@@ -1,6 +1,7 @@
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:grpc/grpc.dart';
+import 'package:migchat_flutter/user_model.dart';
 
 import 'proto/generated/migchat.pbgrpc.dart' as grpc;
 import 'post_model.dart';
@@ -14,8 +15,9 @@ class ChatService {
   /// Flag is indicating that client is shutting down
   bool _isShutdown = false;
 
-  /// registered user_id
+  /// registered user
   Int64? _userId;
+  int get userId => _userId?.toInt() ?? 0;
 
   /// gRPC client channel to send messages to the server
   ClientChannel? _clientSend;
@@ -32,8 +34,6 @@ class ChatService {
   /// gRPC client channel to receive chats from the server
   ClientChannel? _chatsRecv;
 
-  int get userId => _userId?.toInt() ?? 0;
-
   // send methods
 
   final void Function(OutgoingPostModel model) onSendPostOk;
@@ -41,6 +41,7 @@ class ChatService {
 
   // receive streams methods
 
+  final void Function(int userId) onRegistered;
   final void Function(grpc.Invitation invitation) onInvitation;
   final void Function(grpc.UpdateUsers update) onUsersUpdated;
   final void Function(grpc.UpdateChats update) onChatsUpdated;
@@ -51,7 +52,8 @@ class ChatService {
 
   /// Constructor
   ChatService(
-      {required this.onSendPostOk,
+      {required this.onRegistered,
+      required this.onSendPostOk,
       required this.onSendPostError,
       required this.onUsersUpdated,
       required this.onInvitation,
@@ -61,10 +63,6 @@ class ChatService {
       required String shortName,
       required String name}) {
     _register(shortName: shortName, name: name);
-    _startListeningUsers();
-    _startListeningInvitations();
-    _startListeningChats();
-    _startListeningPosts();
   }
 
   ClientChannel _getSender() {
@@ -220,6 +218,11 @@ class ChatService {
     var request = grpc.UserInfo(name: name, shortName: shortName);
     grpc.ChatRoomServiceClient(_getSender()).register(request).then((response) {
       _userId = response.userId;
+      onRegistered(response.userId.toInt());
+      _startListeningUsers();
+      _startListeningInvitations();
+      _startListeningChats();
+      _startListeningPosts();
     }).catchError((e) {
       if (!_isShutdown) {
         _shutdownSend();

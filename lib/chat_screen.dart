@@ -52,6 +52,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final StreamController _invitationsStreamController =
       StreamController<Invitation>();
 
+  UserModel registeredUser =
+      UserModel(id: 0, shortName: '0xAAE', name: 'Alexander Avramenko');
+
   int _selectedUser = -1;
 
   int _selectedChat = -1;
@@ -69,6 +72,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     // initialize Chat client service
     _service = ChatService(
+        onRegistered: (int idUser) {
+          registeredUser.id = idUser;
+        },
         onSendPostOk: onSendPostOk,
         onSendPostError: onSendPostError,
         onUsersUpdated: onUsersUpdated,
@@ -76,8 +82,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         onChatsUpdated: onChatsUpdated,
         onPost: onPost,
         onRecvError: onRecvError,
-        name: 'Alexander',
-        shortName: '0xAAE');
+        name: registeredUser.name,
+        shortName: registeredUser.shortName);
   }
 
   @override
@@ -412,9 +418,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       // check if chat widget with the same ID already exists
       var i = _chats.indexWhere((item) => item.id == chat.chatId);
       if (i != -1) {
-        //todo: found
+        _chats[i].updateUsers(chat, _users, registeredUser);
       } else {
-        _chats.insert(0, ChatModel.from(chat));
+        _chats.insert(0, ChatModel.from(chat, _users, registeredUser));
       }
     });
   }

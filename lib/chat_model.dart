@@ -11,14 +11,31 @@ class ChatModel {
   List<InvitationModel> invitations;
 
   /// Class constructor
-  ChatModel.from(Chat chat)
+  ChatModel.from(
+      Chat chat, List<UserModel> knownUsers, UserModel registeredUser)
       : id = chat.chatId,
         permanent = chat.permanent,
         description = chat.description,
         users = <String>[],
         invitations = <InvitationModel>[] {
+    updateUsers(chat, knownUsers, registeredUser);
+  }
+
+  void updateUsers(
+      Chat chat, List<UserModel> knownUsers, UserModel registeredUser) {
+    users.clear();
     for (var userId in chat.users) {
-      users.add(userId.toString());
+      int id = userId.toInt();
+      var idx = knownUsers.indexWhere((u) => u.id == id);
+      if (idx >= 0) {
+        users.add(knownUsers[idx].shortName);
+      } else {
+        if (id == registeredUser.id) {
+          users.add(registeredUser.shortName);
+        } else {
+          users.add(userId.toString());
+        }
+      }
     }
   }
 
