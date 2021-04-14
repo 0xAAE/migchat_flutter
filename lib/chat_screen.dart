@@ -35,7 +35,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       StreamController<List<PostModel>>();
 
   /// Chat posts list to display into ListView
-  final List<PostViewModel> _posts = <PostViewModel>[];
+  final List<PostModel> _posts = <PostModel>[];
 
   /// Look at the https://codelabs.developers.google.com/codelabs/flutter/#4
   final TextEditingController _textController = TextEditingController();
@@ -84,12 +84,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void dispose() {
     // close Chat client service
     _service.shutdown();
-
     // close bandwidth buffer
     _bandwidthBuffer.stop();
-
-    // free UI resources
-    for (PostViewModel view in _posts) view.animationController.dispose();
     super.dispose();
   }
 
@@ -220,7 +216,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       return ListView.builder(
                           padding: EdgeInsets.all(8.0),
                           reverse: true,
-                          itemBuilder: (_, int index) => _posts[index],
+                          itemBuilder: (_, int index) =>
+                              _buildPostWidget(_posts[index]),
                           itemCount: _posts.length);
                     },
                   ),
@@ -280,13 +277,17 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     _isComposing = false;
 
     // create new message from input text
-    var message = OutgoingPostModel(text: text, id: '');
+    var post = OutgoingPostModel(
+        text: text,
+        userId: _service.userId,
+        chatId: _selectedChat,
+        status: PostStatus.UNKNOWN);
 
     // send message to the display stream through the bandwidth buffer
-    _bandwidthBuffer.send(message);
+    _bandwidthBuffer.send(post);
 
     // async send message to the server
-    _service.sendPost(message);
+    _service.sendPost(post);
   }
 
   /// 'outgoing message sent to the server' event
@@ -354,47 +355,56 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   /// this methods is called to display new (outgoing or incoming) message or
   /// update status of existing outgoing message
   void _addPosts(List<PostModel> posts) {
-    posts.forEach((model) {
-      // check if message with the same ID is already existed
-      var i = _posts.indexWhere((item) => item.model.id == model.id);
+    posts.forEach((post) {
+      debugPrint('new post is received ${post.text}');
+      // check if post is outgoing
+      var i = _posts.indexWhere((item) =>
+          item.userId == _service.userId &&
+          item.chatId == post.chatId &&
+          item.text == post.text);
       if (i != -1) {
-        // found
-        var chatMessage = _posts[i];
-        if (chatMessage is OutgoingPostWidget) {
-          assert(model is OutgoingPostModel,
-              "message must be MessageOutcome type");
-          // update status for outgoing message (from UNKNOWN to SENT)
-          chatMessage.controller.setStatus((model as OutgoingPostModel).status);
-        }
+        // found, update status
+        assert(_posts[i] is OutgoingPostModel);
+        var outgoing = _posts[i] as OutgoingPostModel;
+        outgoing.status = PostStatus.SENT;
       } else {
-        // new message
-        PostViewModel chatMessage;
-        var animationController = AnimationController(
-          duration: Duration(milliseconds: 700),
-          vsync: this,
-        );
-        switch (model.runtimeType) {
-          case OutgoingPostModel:
-            // add new outgoing message
-            chatMessage = OutgoingPostWidget(
-              model: model as OutgoingPostModel,
-              animationController: animationController,
-            );
-            break;
-          default:
-            // add new incoming message
-            chatMessage = IncomingPostWidget(
-              model: model,
-              animationController: animationController,
-            );
-            break;
+        // post is unknown
+        if (post.userId != _service.userId) {
+          // other's post
+          _posts.insert(0, post);
+        } else {
+          // own post which is still unknown
+          _posts.insert(0, OutgoingPostModel.from(post, PostStatus.SENT));
         }
-        _posts.insert(0, chatMessage);
-
-        // look at the https://codelabs.developers.google.com/codelabs/flutter/#6
-        chatMessage.animationController.forward();
       }
     });
+  }
+
+  PostViewModel _buildPostWidget(PostModel model, {bool animated = false}) {
+    // new message
+    PostViewModel widget;
+    var animationController = AnimationController(
+      duration: Duration(milliseconds: animated ? 700 : 0),
+      vsync: this,
+    );
+    switch (model.runtimeType) {
+      case OutgoingPostModel:
+        // add new outgoing message
+        widget = OutgoingPostWidget(
+          model: model as OutgoingPostModel,
+          animationController: animationController,
+        );
+        break;
+      default:
+        // add new incoming message
+        widget = IncomingPostWidget(
+          model: model,
+          animationController: animationController,
+        );
+        break;
+    }
+    widget.animationController.forward();
+    return widget;
   }
 
   void _addChats(List<Chat> chats) {

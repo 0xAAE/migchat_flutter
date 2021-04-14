@@ -42,7 +42,7 @@ class OutgoingPostWidget extends StatefulWidget implements PostViewModel {
   /// Constructor
   OutgoingPostWidget({required this.model, required this.animationController})
       : controller = OutgoingPostController(model: model),
-        super(key: new ObjectKey(model.id));
+        super(key: new ObjectKey(model));
 
   @override
   State createState() => OutgoingPostState(
@@ -71,6 +71,11 @@ class OutgoingPostState extends State<OutgoingPostWidget> {
 
   @override
   Widget build(BuildContext context) {
+    Color textColor = controller.model.status == PostStatus.UNKNOWN
+        ? Theme.of(context).disabledColor
+        : controller.model.status == PostStatus.RETRYING
+            ? Theme.of(context).errorColor
+            : Theme.of(context).textTheme.bodyText1!.color!;
     return SizeTransition(
       sizeFactor:
           CurvedAnimation(parent: animationController, curve: Curves.easeOut),
@@ -91,7 +96,10 @@ class OutgoingPostState extends State<OutgoingPostWidget> {
                   Text(_name, style: Theme.of(context).textTheme.subtitle1),
                   Container(
                     margin: EdgeInsets.only(top: 5.0),
-                    child: Text(controller.model.text),
+                    child: Text(
+                      controller.model.text,
+                      style: TextStyle(color: textColor),
+                    ),
                   ),
                 ],
               ),

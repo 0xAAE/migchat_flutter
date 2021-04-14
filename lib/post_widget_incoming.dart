@@ -15,7 +15,7 @@ class IncomingPostWidget extends StatelessWidget implements PostViewModel {
 
   /// Constructor
   IncomingPostWidget({required this.model, required this.animationController})
-      : super(key: new ObjectKey(model.id));
+      : super(key: new ObjectKey(model));
 
   @override
   Widget build(BuildContext context) {

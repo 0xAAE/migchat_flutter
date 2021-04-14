@@ -32,6 +32,8 @@ class ChatService {
   /// gRPC client channel to receive chats from the server
   ClientChannel? _chatsRecv;
 
+  int get userId => _userId?.toInt() ?? 0;
+
   // send methods
 
   final void Function(OutgoingPostModel model) onSendPostOk;
