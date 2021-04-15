@@ -337,9 +337,13 @@ class ChatService {
         }
       });
     } else {
-      var post = grpc.Post(userId: _userId, chatId: 0, text: model.text);
+      var post = grpc.Post(
+          id: Int64(model.id),
+          userId: _userId,
+          chatId: Int64(model.chatId),
+          text: model.text);
       grpc.ChatRoomServiceClient(_getSender()).createPost(post).then((_) {
-        model.status = PostStatus.SENT;
+        model.status = PostStatus.UNKNOWN;
         onSendPostOk(model);
       }).catchError((e) {
         if (!_isShutdown) {
@@ -363,9 +367,15 @@ class ChatService {
         }
       });
     } else {
-      var ref = grpc.ChatReference(chatId: chatId, userId: _userId);
+      var ref = grpc.ChatReference(chatId: Int64(chatId), userId: _userId);
       grpc.ChatRoomServiceClient(_getSender()).enterChat(ref).catchError((e) {
         if (!_isShutdown) {
+          if (e is GrpcError) {
+            var ge = e as GrpcError;
+            if (ge.codeName == "ALREADY_EXISTS") {
+              return;
+            }
+          }
           Future.delayed(Duration(seconds: 30), () {
             if (!_isShutdown) {
               enterChat(chatId);

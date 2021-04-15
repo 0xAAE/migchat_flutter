@@ -173,7 +173,7 @@ class UpdateUsers extends $pb.GeneratedMessage {
 
 class User extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'User', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'migchat'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'shortName')
     ..hasRequiredFields = false
@@ -181,13 +181,13 @@ class User extends $pb.GeneratedMessage {
 
   User._() : super();
   factory User({
-    $fixnum.Int64? userId,
+    $fixnum.Int64? id,
     $core.String? name,
     $core.String? shortName,
   }) {
     final _result = create();
-    if (userId != null) {
-      _result.userId = userId;
+    if (id != null) {
+      _result.id = id;
     }
     if (name != null) {
       _result.name = name;
@@ -219,13 +219,13 @@ class User extends $pb.GeneratedMessage {
   static User? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $fixnum.Int64 get userId => $_getI64(0);
+  $fixnum.Int64 get id => $_getI64(0);
   @$pb.TagNumber(1)
-  set userId($fixnum.Int64 v) { $_setInt64(0, v); }
+  set id($fixnum.Int64 v) { $_setInt64(0, v); }
   @$pb.TagNumber(1)
-  $core.bool hasUserId() => $_has(0);
+  $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get name => $_getSZ(1);
@@ -394,7 +394,7 @@ class ChatInfo extends $pb.GeneratedMessage {
 
 class Chat extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Chat', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'migchat'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'chatId', $pb.PbFieldType.OU3)
+    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'permanent')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..p<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'users', $pb.PbFieldType.PU6)
@@ -403,14 +403,14 @@ class Chat extends $pb.GeneratedMessage {
 
   Chat._() : super();
   factory Chat({
-    $core.int? chatId,
+    $fixnum.Int64? id,
     $core.bool? permanent,
     $core.String? description,
     $core.Iterable<$fixnum.Int64>? users,
   }) {
     final _result = create();
-    if (chatId != null) {
-      _result.chatId = chatId;
+    if (id != null) {
+      _result.id = id;
     }
     if (permanent != null) {
       _result.permanent = permanent;
@@ -445,13 +445,13 @@ class Chat extends $pb.GeneratedMessage {
   static Chat? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.int get chatId => $_getIZ(0);
+  $fixnum.Int64 get id => $_getI64(0);
   @$pb.TagNumber(1)
-  set chatId($core.int v) { $_setUnsignedInt32(0, v); }
+  set id($fixnum.Int64 v) { $_setInt64(0, v); }
   @$pb.TagNumber(1)
-  $core.bool hasChatId() => $_has(0);
+  $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearChatId() => clearField(1);
+  void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.bool get permanent => $_getBF(1);
@@ -478,14 +478,14 @@ class Chat extends $pb.GeneratedMessage {
 class ChatReference extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChatReference', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'migchat'), createEmptyInstance: create)
     ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'chatId', $pb.PbFieldType.OU3)
+    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'chatId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..hasRequiredFields = false
   ;
 
   ChatReference._() : super();
   factory ChatReference({
     $fixnum.Int64? userId,
-    $core.int? chatId,
+    $fixnum.Int64? chatId,
   }) {
     final _result = create();
     if (userId != null) {
@@ -527,9 +527,9 @@ class ChatReference extends $pb.GeneratedMessage {
   void clearUserId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $core.int get chatId => $_getIZ(1);
+  $fixnum.Int64 get chatId => $_getI64(1);
   @$pb.TagNumber(2)
-  set chatId($core.int v) { $_setUnsignedInt32(1, v); }
+  set chatId($fixnum.Int64 v) { $_setInt64(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasChatId() => $_has(1);
   @$pb.TagNumber(2)
@@ -540,7 +540,7 @@ class Invitation extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Invitation', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'migchat'), createEmptyInstance: create)
     ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fromUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'chatId', $pb.PbFieldType.OU3)
+    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'chatId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..hasRequiredFields = false
   ;
 
@@ -548,7 +548,7 @@ class Invitation extends $pb.GeneratedMessage {
   factory Invitation({
     $fixnum.Int64? fromUserId,
     $fixnum.Int64? toUserId,
-    $core.int? chatId,
+    $fixnum.Int64? chatId,
   }) {
     final _result = create();
     if (fromUserId != null) {
@@ -602,9 +602,9 @@ class Invitation extends $pb.GeneratedMessage {
   void clearToUserId() => clearField(2);
 
   @$pb.TagNumber(3)
-  $core.int get chatId => $_getIZ(2);
+  $fixnum.Int64 get chatId => $_getI64(2);
   @$pb.TagNumber(3)
-  set chatId($core.int v) { $_setUnsignedInt32(2, v); }
+  set chatId($fixnum.Int64 v) { $_setInt64(2, v); }
   @$pb.TagNumber(3)
   $core.bool hasChatId() => $_has(2);
   @$pb.TagNumber(3)
@@ -749,21 +749,26 @@ class Attachment extends $pb.GeneratedMessage {
 
 class Post extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Post', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'migchat'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'chatId', $pb.PbFieldType.OU3)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'text')
-    ..pc<Attachment>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'attachments', $pb.PbFieldType.PM, subBuilder: Attachment.create)
+    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'chatId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'text')
+    ..pc<Attachment>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'attachments', $pb.PbFieldType.PM, subBuilder: Attachment.create)
     ..hasRequiredFields = false
   ;
 
   Post._() : super();
   factory Post({
+    $fixnum.Int64? id,
     $fixnum.Int64? userId,
-    $core.int? chatId,
+    $fixnum.Int64? chatId,
     $core.String? text,
     $core.Iterable<Attachment>? attachments,
   }) {
     final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
     if (userId != null) {
       _result.userId = userId;
     }
@@ -800,33 +805,42 @@ class Post extends $pb.GeneratedMessage {
   static Post? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $fixnum.Int64 get userId => $_getI64(0);
+  $fixnum.Int64 get id => $_getI64(0);
   @$pb.TagNumber(1)
-  set userId($fixnum.Int64 v) { $_setInt64(0, v); }
+  set id($fixnum.Int64 v) { $_setInt64(0, v); }
   @$pb.TagNumber(1)
-  $core.bool hasUserId() => $_has(0);
+  $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => clearField(1);
+  void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $core.int get chatId => $_getIZ(1);
+  $fixnum.Int64 get userId => $_getI64(1);
   @$pb.TagNumber(2)
-  set chatId($core.int v) { $_setUnsignedInt32(1, v); }
+  set userId($fixnum.Int64 v) { $_setInt64(1, v); }
   @$pb.TagNumber(2)
-  $core.bool hasChatId() => $_has(1);
+  $core.bool hasUserId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearChatId() => clearField(2);
+  void clearUserId() => clearField(2);
 
   @$pb.TagNumber(3)
-  $core.String get text => $_getSZ(2);
+  $fixnum.Int64 get chatId => $_getI64(2);
   @$pb.TagNumber(3)
-  set text($core.String v) { $_setString(2, v); }
+  set chatId($fixnum.Int64 v) { $_setInt64(2, v); }
   @$pb.TagNumber(3)
-  $core.bool hasText() => $_has(2);
+  $core.bool hasChatId() => $_has(2);
   @$pb.TagNumber(3)
-  void clearText() => clearField(3);
+  void clearChatId() => clearField(3);
 
   @$pb.TagNumber(4)
-  $core.List<Attachment> get attachments => $_getList(3);
+  $core.String get text => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set text($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasText() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearText() => clearField(4);
+
+  @$pb.TagNumber(9)
+  $core.List<Attachment> get attachments => $_getList(4);
 }
 

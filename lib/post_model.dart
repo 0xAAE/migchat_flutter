@@ -3,22 +3,30 @@ import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 
 /// Message is class defining message data (id and text)
 class PostModel {
+  int id;
   int userId;
   int chatId;
   String text;
 
-  PostModel({required this.userId, required this.chatId, required this.text});
+  PostModel(
+      {required this.id,
+      required this.userId,
+      required this.chatId,
+      required this.text});
 
   PostModel.from(Post post)
       : text = post.text,
         userId = post.userId.toInt(),
-        chatId = post.chatId;
+        chatId = post.chatId.toInt(),
+        id = post.id.toInt();
 }
 
 /// Outgoing message statuses
 /// UNKNOWN - message just created and is not sent yet
 /// SENT - message is sent to the server successfully
 enum PostStatus { UNKNOWN, SENT, RETRYING }
+
+const int NO_POST_ID = 0;
 
 /// MessageOutgoing is class defining message data (id and text) and status
 class OutgoingPostModel extends PostModel {
@@ -31,11 +39,15 @@ class OutgoingPostModel extends PostModel {
       required int chatId,
       required String text,
       this.status = PostStatus.UNKNOWN})
-      : super(userId: userId, chatId: chatId, text: text);
+      : super(id: NO_POST_ID, userId: userId, chatId: chatId, text: text);
 
   OutgoingPostModel.from(PostModel post, PostStatus status)
       : status = status,
-        super(userId: post.userId, chatId: post.chatId, text: post.text);
+        super(
+            id: post.id,
+            userId: post.userId,
+            chatId: post.chatId,
+            text: post.text);
 }
 
 abstract class PostViewModel extends Widget {

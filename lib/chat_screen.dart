@@ -285,11 +285,16 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     _textController.clear();
     _isComposing = false;
 
+    if (_selectedChat == -1) {
+      debugPrint('chat is nort selected');
+      return;
+    }
+
     // create new message from input text
     var post = OutgoingPostModel(
         text: text,
         userId: registeredUser.id,
-        chatId: _selectedChat,
+        chatId: _chats[_selectedChat].id,
         status: PostStatus.UNKNOWN);
 
     // send message to the display stream through the bandwidth buffer
@@ -338,7 +343,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void onInvitation(Invitation invitation) {
     debugPrint(
         "invitation received from ${invitation.fromUserId} to ${invitation.chatId}");
-    _service.enterChat(invitation.chatId);
+    _service.enterChat(invitation.chatId.toInt());
     _invitationsStreamController.add(invitation);
   }
 
@@ -365,28 +370,40 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   /// update status of existing outgoing message
   void _addPosts(List<PostModel> posts) {
     posts.forEach((post) {
-      debugPrint('new post is received ${post.text}');
-      // check if post is exists
-      var i = _posts.indexWhere((item) => item == post);
-      if (i != -1) {
-        // found, update not insert
-        if (_posts[i].userId == registeredUser.id) {
-          // outgoing post, update status
+      debugPrint('new post is received, "${post.text}"');
+      // test if duplicated
+      var i = _posts.indexWhere((item) => item.id == post.id);
+      if (i == -1) {
+        // test if there is our recent post
+        i = _posts.indexWhere((item) =>
+            item.id == NO_POST_ID &&
+            item.userId == registeredUser.id &&
+            item.chatId == post.chatId &&
+            item.text == post.text);
+        if (i != -1) {
+          // found own recent post, update only id & status
+          _posts[i].id = post.id;
+          // must be outgoing post, update status
           assert(_posts[i] is OutgoingPostModel);
-          var outgoing = _posts[i] as OutgoingPostModel;
-          outgoing.status = PostStatus.SENT;
+          var asOutgoing = _posts[i] as OutgoingPostModel;
+          asOutgoing.status = PostStatus.SENT;
+          debugPrint('own recent post updated');
         } else {
-          // duplicated incoming post, ingnore
+          // not found, add
+          // post is unknown
+          if (post.userId == registeredUser.id) {
+            // own post which is still unknown
+            _posts.insert(0, OutgoingPostModel.from(post, PostStatus.SENT));
+            debugPrint('recent outgoing post stored');
+          } else {
+            // other's post
+            _posts.insert(0, post);
+            debugPrint('incoming post stored');
+          }
         }
       } else {
-        // post is unknown
-        if (post.userId == registeredUser.id) {
-          // own post which is still unknown
-          _posts.insert(0, OutgoingPostModel.from(post, PostStatus.SENT));
-        } else {
-          // other's post
-          _posts.insert(0, post);
-        }
+        // already known post, ignore
+        debugPrint('already known, ignore');
       }
     });
   }
@@ -421,7 +438,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void _addChats(List<Chat> chats) {
     chats.forEach((chat) {
       // check if chat widget with the same ID already exists
-      var i = _chats.indexWhere((item) => item.id == chat.chatId);
+      var i = _chats.indexWhere((item) => item.id == chat.id.toInt());
       if (i != -1) {
         _chats[i].updateUsers(chat, _users, registeredUser);
       } else {
@@ -433,7 +450,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void _addUsers(List<User> users) {
     users.forEach((user) {
       // check if user widget with the same ID already exists
-      var i = _users.indexWhere((item) => item.id == user.userId.toInt());
+      var i = _users.indexWhere((item) => item.id == user.id.toInt());
       if (i != -1) {
         //todo: found
       } else {

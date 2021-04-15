@@ -13,7 +13,7 @@ class ChatModel {
   /// Class constructor
   ChatModel.from(
       Chat chat, List<UserModel> knownUsers, UserModel registeredUser)
-      : id = chat.chatId,
+      : id = chat.id.toInt(),
         permanent = chat.permanent,
         description = chat.description,
         users = <String>[],

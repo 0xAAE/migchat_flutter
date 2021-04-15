@@ -12,7 +12,7 @@ class UserModel {
   UserModel({required this.id, required this.name, required this.shortName});
 
   UserModel.from(User user)
-      : id = user.userId.toInt(),
+      : id = user.id.toInt(),
         name = user.name,
         shortName = user.shortName;
 }
