@@ -107,6 +107,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               // users
               Flexible(
                   child: StreamBuilder<List<User>>(
+                key: ObjectKey(_usersStreamController),
                 stream: _usersStreamController.stream as Stream<List<User>>,
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (snapshot.hasError) {
@@ -154,6 +155,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               // chats
               Flexible(
                   child: StreamBuilder<List<Chat>>(
+                key: ObjectKey(_chatsStreamController),
                 stream: _chatsStreamController.stream as Stream<List<Chat>>,
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (snapshot.hasError) {
@@ -205,6 +207,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 // posts
                 Flexible(
                   child: StreamBuilder<List<PostModel>>(
+                    key: ObjectKey(_postsStreamController),
                     stream: _postsStreamController.stream
                         as Stream<List<PostModel>>,
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -285,7 +288,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     // create new message from input text
     var post = OutgoingPostModel(
         text: text,
-        userId: _service.userId,
+        userId: registeredUser.id,
         chatId: _selectedChat,
         status: PostStatus.UNKNOWN);
 
@@ -363,24 +366,26 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void _addPosts(List<PostModel> posts) {
     posts.forEach((post) {
       debugPrint('new post is received ${post.text}');
-      // check if post is outgoing
-      var i = _posts.indexWhere((item) =>
-          item.userId == _service.userId &&
-          item.chatId == post.chatId &&
-          item.text == post.text);
+      // check if post is exists
+      var i = _posts.indexWhere((item) => item == post);
       if (i != -1) {
-        // found, update status
-        assert(_posts[i] is OutgoingPostModel);
-        var outgoing = _posts[i] as OutgoingPostModel;
-        outgoing.status = PostStatus.SENT;
+        // found, update not insert
+        if (_posts[i].userId == registeredUser.id) {
+          // outgoing post, update status
+          assert(_posts[i] is OutgoingPostModel);
+          var outgoing = _posts[i] as OutgoingPostModel;
+          outgoing.status = PostStatus.SENT;
+        } else {
+          // duplicated incoming post, ingnore
+        }
       } else {
         // post is unknown
-        if (post.userId != _service.userId) {
-          // other's post
-          _posts.insert(0, post);
-        } else {
+        if (post.userId == registeredUser.id) {
           // own post which is still unknown
           _posts.insert(0, OutgoingPostModel.from(post, PostStatus.SENT));
+        } else {
+          // other's post
+          _posts.insert(0, post);
         }
       }
     });
