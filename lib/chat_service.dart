@@ -17,7 +17,6 @@ class ChatService {
 
   /// registered user
   Int64? _userId;
-  int get userId => _userId?.toInt() ?? 0;
 
   /// gRPC client channel to send messages to the server
   ClientChannel? _clientSend;
