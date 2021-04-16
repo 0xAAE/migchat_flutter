@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'post_model.dart';
 
-/// Incoming message author name
-const String _server = "Server";
-
 /// ChatMessageIncoming is widget to display incoming from server message
 class IncomingPostWidget extends StatelessWidget implements PostViewModel {
   /// Incoming message content
@@ -13,12 +10,19 @@ class IncomingPostWidget extends StatelessWidget implements PostViewModel {
   /// Controller of animation for message widget
   final AnimationController animationController;
 
+  final String Function(int userId) resolveUserName;
+
   /// Constructor
-  IncomingPostWidget({required this.model, required this.animationController})
+  IncomingPostWidget(
+      {required this.model,
+      required this.animationController,
+      required this.resolveUserName})
       : super(key: new ObjectKey(model));
 
   @override
   Widget build(BuildContext context) {
+    var author = resolveUserName(model.userId);
+    assert(author.length > 0);
     return SizeTransition(
       sizeFactor:
           CurvedAnimation(parent: animationController, curve: Curves.easeOut),
@@ -32,7 +36,7 @@ class IncomingPostWidget extends StatelessWidget implements PostViewModel {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: <Widget>[
-                  Text(_server, style: Theme.of(context).textTheme.subtitle1),
+                  Text(author, style: Theme.of(context).textTheme.subtitle1),
                   Container(
                     margin: EdgeInsets.only(top: 5.0),
                     child: Text(model.text),
@@ -44,7 +48,7 @@ class IncomingPostWidget extends StatelessWidget implements PostViewModel {
               margin: EdgeInsets.only(left: 16.0),
               child: CircleAvatar(
                   backgroundColor: Colors.pink.shade600,
-                  child: Text(_server[0])),
+                  child: Text(author[0])),
             ),
           ],
         ),

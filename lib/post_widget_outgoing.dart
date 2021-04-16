@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'post_model.dart';
 
-/// Outgoing message author name
-const String _name = "Me";
-
 /// ChatMessageOutgoingController is 'Controller' class that allows change message properties
 class OutgoingPostController {
   /// Outgoing message content
@@ -14,8 +11,10 @@ class OutgoingPostController {
   late void Function(PostStatus oldStatus, PostStatus newStatus)
       onStatusChanged;
 
+  final String userName;
+
   /// Constructor
-  OutgoingPostController({required this.model});
+  OutgoingPostController({required this.model, required this.userName});
 
   /// setStatus is method to update status of the outgoing message
   /// It raises onStatusChanged event
@@ -40,8 +39,11 @@ class OutgoingPostWidget extends StatefulWidget implements PostViewModel {
   final AnimationController animationController;
 
   /// Constructor
-  OutgoingPostWidget({required this.model, required this.animationController})
-      : controller = OutgoingPostController(model: model),
+  OutgoingPostWidget(
+      {required this.model,
+      required this.animationController,
+      required String userName})
+      : controller = OutgoingPostController(model: model, userName: userName),
         super(key: new ObjectKey(model));
 
   @override
@@ -71,6 +73,8 @@ class OutgoingPostState extends State<OutgoingPostWidget> {
 
   @override
   Widget build(BuildContext context) {
+    var name = controller.userName;
+    assert(name.length > 0);
     Color textColor = controller.model.status == PostStatus.UNKNOWN
         ? Theme.of(context).disabledColor
         : controller.model.status == PostStatus.RETRYING
@@ -87,13 +91,13 @@ class OutgoingPostState extends State<OutgoingPostWidget> {
           children: <Widget>[
             Container(
               margin: EdgeInsets.only(right: 16.0),
-              child: CircleAvatar(child: Text(_name[0])),
+              child: CircleAvatar(child: Text(name[0])),
             ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(_name, style: Theme.of(context).textTheme.subtitle1),
+                  Text(name, style: Theme.of(context).textTheme.subtitle1),
                   Container(
                     margin: EdgeInsets.only(top: 5.0),
                     child: Text(

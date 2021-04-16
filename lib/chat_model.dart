@@ -3,6 +3,8 @@ import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 import 'package:migchat_flutter/user_model.dart';
 import 'invitation_model.dart';
 
+const int NO_CHAT_ID = 0;
+
 class ChatModel {
   int id;
   bool permanent;

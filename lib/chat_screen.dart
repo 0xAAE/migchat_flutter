@@ -97,6 +97,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    var selChatId =
+        _selectedChat == NOT_SELECTED ? NO_CHAT_ID : _chats[_selectedChat].id;
+    var filteredPosts = _posts.where((_p) => _p.chatId == selChatId);
+    var filteredCount = filteredPosts.length;
     return Scaffold(
       appBar: AppBar(title: Text("MiGChat")),
       body: Row(
@@ -226,8 +230,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           padding: EdgeInsets.all(8.0),
                           reverse: true,
                           itemBuilder: (_, int index) =>
-                              _buildPostWidget(_posts[index]),
-                          itemCount: _posts.length);
+                              _buildPostWidget(filteredPosts.elementAt(index)),
+                          itemCount: filteredCount);
                     },
                   ),
                 ),
@@ -238,7 +242,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   decoration: BoxDecoration(color: Theme.of(context).cardColor),
                   child: PostComposerWidget(
                     enabled: _selectedChat != NOT_SELECTED,
-                    onSubmit: _onSubmitPost,
+                    onSubmit: onSubmitPost,
                   ),
                 ),
               ])),
@@ -248,7 +252,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   /// 'new outgoing message created' event
-  void _onSubmitPost(String text) {
+  void onSubmitPost(String text) {
     assert(_selectedChat != NOT_SELECTED);
 
     // create new message from input text
@@ -263,6 +267,26 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     // async send message to the server
     _service.sendPost(post);
+
+    setState(() {});
+  }
+
+  String userShortName(int userId) {
+    var i = _users.indexWhere((_u) => _u.id == userId);
+    if (i != NOT_FOUND) {
+      return _users[i].shortName;
+    } else {
+      return userId.toString();
+    }
+  }
+
+  String chatName(int chatId) {
+    var i = _chats.indexWhere((_c) => _c.id == chatId);
+    if (i != NOT_FOUND) {
+      return _chats[i].description;
+    } else {
+      return chatId.toString();
+    }
   }
 
   /// 'outgoing message sent to the server' event
@@ -402,6 +426,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         widget = OutgoingPostWidget(
           model: model as OutgoingPostModel,
           animationController: animationController,
+          userName: registeredUser.shortName,
         );
         break;
       default:
@@ -409,6 +434,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         widget = IncomingPostWidget(
           model: model,
           animationController: animationController,
+          resolveUserName: userShortName,
         );
         break;
     }
