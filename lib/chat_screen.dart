@@ -7,10 +7,11 @@ import 'bandwidth_buffer.dart';
 import 'chat_model.dart';
 import 'chat_widget.dart';
 import 'post_model.dart';
+import 'post_composer_widget.dart';
 import 'post_widget_incoming.dart';
 import 'post_widget_outgoing.dart';
 import 'chat_service.dart';
-import 'invitation_model.dart';
+//import 'invitation_model.dart';
 import 'user_model.dart';
 import 'user_widget.dart';
 
@@ -21,6 +22,9 @@ class ChatScreen extends StatefulWidget {
   @override
   State createState() => ChatScreenState();
 }
+
+const int NOT_SELECTED = -1;
+const int NOT_FOUND = -1;
 
 /// State for ChatScreen widget
 class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
@@ -37,10 +41,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   /// Chat posts list to display into ListView
   final List<PostModel> _posts = <PostModel>[];
 
-  /// Look at the https://codelabs.developers.google.com/codelabs/flutter/#4
-  final TextEditingController _textController = TextEditingController();
-  bool _isComposing = false;
-
   final StreamController _usersStreamController =
       StreamController<List<User>>();
   final List<UserModel> _users = <UserModel>[];
@@ -55,9 +55,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   UserModel registeredUser =
       UserModel(id: 0, shortName: '0xAAE', name: 'Alexander Avramenko');
 
-  int _selectedUser = -1;
+  int _selectedUser = NOT_SELECTED;
 
-  int _selectedChat = -1;
+  int _selectedChat = NOT_SELECTED;
 
   @override
   void initState() {
@@ -142,7 +142,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                               if (_selectedUser != index) {
                                 setState(() {
                                   _selectedUser = index;
-                                  _selectedChat = -1;
+                                  _selectedChat = NOT_SELECTED;
                                 });
                               }
                             });
@@ -188,7 +188,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           onTap: () {
                             setState(() {
                               _selectedChat = index;
-                              _selectedUser = -1;
+                              _selectedUser = NOT_SELECTED;
                             });
                           },
                         );
@@ -202,7 +202,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           VerticalDivider(width: 1.0),
           // posts + composer
           Expanded(
-              flex: 4,
+              flex: 2,
               child: Column(children: [
                 // posts
                 Flexible(
@@ -236,7 +236,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 // post composer
                 Container(
                   decoration: BoxDecoration(color: Theme.of(context).cardColor),
-                  child: _buildTextComposer(),
+                  child: PostComposerWidget(
+                    enabled: _selectedChat != NOT_SELECTED,
+                    onSubmit: _onSubmitPost,
+                  ),
                 ),
               ])),
         ],
@@ -244,51 +247,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  /// Look at the https://codelabs.developers.google.com/codelabs/flutter/#4
-  Widget _buildTextComposer() {
-    return IconTheme(
-      data: IconThemeData(color: Theme.of(context).accentColor),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: Row(
-          children: <Widget>[
-            Flexible(
-              child: TextField(
-                maxLines: null,
-                textInputAction: TextInputAction.send,
-                controller: _textController,
-                onChanged: (String text) {
-                  setState(() {
-                    _isComposing = text.length > 0;
-                  });
-                },
-                onSubmitted: _isComposing ? _handleSubmitted : null,
-                decoration: InputDecoration.collapsed(hintText: "Send a post"),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 4.0),
-              child: IconButton(
-                  icon: Icon(Icons.send),
-                  onPressed: _isComposing
-                      ? () => _handleSubmitted(_textController.text)
-                      : null),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   /// 'new outgoing message created' event
-  void _handleSubmitted(String text) {
-    _textController.clear();
-    _isComposing = false;
-
-    if (_selectedChat == -1) {
-      debugPrint('chat is nort selected');
-      return;
-    }
+  void _onSubmitPost(String text) {
+    assert(_selectedChat != NOT_SELECTED);
 
     // create new message from input text
     var post = OutgoingPostModel(
@@ -306,7 +267,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   /// 'outgoing message sent to the server' event
   void onSendPostOk(OutgoingPostModel message) {
-    debugPrint("message \"${message.text}\" sent to the server");
+    debugPrint("message \"${message.text.trim()}\" sent to the server");
     // send updated message to the display stream through the bandwidth buffer
     _bandwidthBuffer.send(message);
   }
@@ -314,7 +275,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   /// 'failed to send message' event
   void onSendPostError(PostModel message, String error) {
     debugPrint(
-        "FAILED to send message \"${message.text}\" to the server: $error");
+        "FAILED to send message \"${message.text.trim()}\" to the server: $error");
   }
 
   void onUsersUpdated(UpdateUsers update) {
@@ -342,7 +303,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   void onInvitation(Invitation invitation) {
     debugPrint(
-        "invitation received from ${invitation.fromUserId} to ${invitation.chatId}");
+        "invitation received from ${invitation.fromUserId} to ${invitation.chatId}, accepting");
     _service.enterChat(invitation.chatId.toInt());
     _invitationsStreamController.add(invitation);
   }
@@ -354,7 +315,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   /// 'new incoming message received from the server' event
   void onPost(Post post) {
-    debugPrint("received post from the server: ${post.text}");
+    debugPrint("received post from the server: \"${post.text.trim()}\"");
     // send updated message to the display stream through the bandwidth buffer
     _bandwidthBuffer.send(PostModel.from(post));
   }
@@ -370,40 +331,60 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   /// update status of existing outgoing message
   void _addPosts(List<PostModel> posts) {
     posts.forEach((post) {
-      debugPrint('new post is received, "${post.text}"');
-      // test if duplicated
-      var i = _posts.indexWhere((item) => item.id == post.id);
-      if (i == -1) {
-        // test if there is our recent post
-        i = _posts.indexWhere((item) =>
-            item.id == NO_POST_ID &&
-            item.userId == registeredUser.id &&
-            item.chatId == post.chatId &&
-            item.text == post.text);
-        if (i != -1) {
-          // found own recent post, update only id & status
-          _posts[i].id = post.id;
-          // must be outgoing post, update status
-          assert(_posts[i] is OutgoingPostModel);
-          var asOutgoing = _posts[i] as OutgoingPostModel;
-          asOutgoing.status = PostStatus.SENT;
-          debugPrint('own recent post updated');
+      debugPrint(
+          'new ${post.id == NO_POST_ID ? 'unconfirmed' : ''} post to display, "${post.text.trim()}"');
+      if (post.id == NO_POST_ID) {
+        if (post.userId != registeredUser.id) {
+          debugPrint('proto violation, get incoming post without ID, ignoring');
         } else {
-          // not found, add
-          // post is unknown
-          if (post.userId == registeredUser.id) {
+          // test if it is already seen before
+          var i = _posts.indexWhere((_p) =>
+              _p.userId == post.userId &&
+              _p.chatId == post.chatId &&
+              _p.text == post.text);
+          if (i == NOT_FOUND) {
             // own post which is still unknown
-            _posts.insert(0, OutgoingPostModel.from(post, PostStatus.SENT));
-            debugPrint('recent outgoing post stored');
+            _posts.insert(0, OutgoingPostModel.from(post, PostStatus.UNKNOWN));
+            debugPrint('recent unconfirmed outgoing post added to  display');
           } else {
-            // other's post
-            _posts.insert(0, post);
-            debugPrint('incoming post stored');
+            debugPrint('ignoring duplicated unconfirmed outgoing post');
           }
         }
       } else {
-        // already known post, ignore
-        debugPrint('already known, ignore');
+        // post with actual ID
+        // test if duplicated
+        var i = _posts.indexWhere((_p) => _p.id == post.id);
+        if (i == NOT_FOUND) {
+          // test if there is our recent post
+          i = _posts.indexWhere((_p) =>
+              _p.id == NO_POST_ID &&
+              _p.userId == registeredUser.id &&
+              _p.chatId == post.chatId &&
+              _p.text == post.text);
+          if (i != NOT_FOUND) {
+            // found own recent post, update only id & status
+            _posts[i].id = post.id;
+            // must be outgoing post, update status
+            assert(_posts[i] is OutgoingPostModel);
+            var asOutgoing = _posts[i] as OutgoingPostModel;
+            asOutgoing.status = PostStatus.SENT;
+            debugPrint('recent outgoing post has been updated');
+          } else {
+            // not found, add new post to display
+            if (post.userId == registeredUser.id) {
+              // own post which is still unknown
+              _posts.insert(0, OutgoingPostModel.from(post, PostStatus.SENT));
+              debugPrint('recent outgoing added to display');
+            } else {
+              // other's post
+              _posts.insert(0, post);
+              debugPrint('incoming post added to display');
+            }
+          }
+        } else {
+          // already known post, ignore
+          debugPrint('ignoring duplicated post');
+        }
       }
     });
   }
@@ -439,7 +420,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     chats.forEach((chat) {
       // check if chat widget with the same ID already exists
       var i = _chats.indexWhere((item) => item.id == chat.id.toInt());
-      if (i != -1) {
+      if (i != NOT_FOUND) {
         _chats[i].updateUsers(chat, _users, registeredUser);
       } else {
         _chats.insert(0, ChatModel.from(chat, _users, registeredUser));
@@ -451,7 +432,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     users.forEach((user) {
       // check if user widget with the same ID already exists
       var i = _users.indexWhere((item) => item.id == user.id.toInt());
-      if (i != -1) {
+      if (i != NOT_FOUND) {
         //todo: found
       } else {
         _users.insert(0, UserModel.from(user));
