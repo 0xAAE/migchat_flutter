@@ -59,6 +59,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   int _selectedChat = NOT_SELECTED;
 
+  bool _onlyFavorites = false;
+
   @override
   void initState() {
     super.initState();
@@ -185,7 +187,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                             ),
                             model: _chats[index],
                             isSelected: _selectedChat == index);
-                        // look at the https://codelabs.developers.google.com/codelabs/flutter/#6
                         widget.animationController.forward();
                         return GestureDetector(
                           child: widget,
@@ -200,6 +201,41 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       itemCount: _chats.length);
                 },
               )),
+              BottomAppBar(
+                  color: Colors.blue,
+                  child: IconTheme(
+                    data: IconThemeData(
+                        color: Theme.of(context).colorScheme.onPrimary),
+                    child: Row(
+                      children: <Widget>[
+                        IconButton(
+                          icon: const Icon(Icons.menu),
+                          onPressed: onNavigationMenu,
+                          tooltip: 'Open navigation menu',
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.search),
+                          onPressed: onSearchInChats,
+                          tooltip: 'Search through all chats',
+                        ),
+                        IconButton(
+                            icon: _onlyFavorites
+                                ? const Icon(Icons.favorite)
+                                : const Icon(Icons.favorite_border),
+                            onPressed: onToggleFavourites,
+                            tooltip: 'Display only favourites'),
+                        Spacer(flex: 10),
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: onCreateChat,
+                          tooltip: 'Create new chat',
+                        ),
+                        Spacer(
+                          flex: 1,
+                        )
+                      ],
+                    ),
+                  )),
             ]),
           ),
           // ------------------
@@ -269,6 +305,25 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     _service.sendPost(post);
 
     setState(() {});
+  }
+
+  void onNavigationMenu() {
+    debugPrint('Navigation menu is not implemented yet');
+  }
+
+  void onSearchInChats() {
+    debugPrint('Searching in chats is not implemented yet');
+  }
+
+  void onToggleFavourites() {
+    setState(() {
+      _onlyFavorites = !_onlyFavorites;
+    });
+    debugPrint('Toggling favourites is not implemented yet');
+  }
+
+  void onCreateChat() {
+    debugPrint('Creating new chat is not implemented yet');
   }
 
   String userShortName(int userId) {
