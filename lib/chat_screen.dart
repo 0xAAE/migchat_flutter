@@ -60,6 +60,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   int _selectedChat = NOT_SELECTED;
 
   bool _onlyFavorites = false;
+  bool _newChatNameInProgress = false;
 
   @override
   void initState() {
@@ -201,6 +202,19 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       itemCount: _chats.length);
                 },
               )),
+              if (_newChatNameInProgress)
+                TextFormField(
+                  maxLength: 50,
+                  decoration: const InputDecoration(
+                    icon: Icon(Icons.chat),
+                    labelText: 'New chat name *',
+                    hintText: 'How to display new chat in list',
+                    // enabledBorder: UnderlineInputBorder(
+                    //   borderSide: BorderSide(color: Color(0xFF6200EE)),
+                    // ),
+                  ),
+                  onFieldSubmitted: onCreateChat,
+                ),
               BottomAppBar(
                   color: Colors.blue,
                   child: IconTheme(
@@ -227,7 +241,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         Spacer(flex: 10),
                         IconButton(
                           icon: const Icon(Icons.add),
-                          onPressed: onCreateChat,
+                          onPressed: () {
+                            setState(() {
+                              _newChatNameInProgress = true;
+                            });
+                          },
                           tooltip: 'Create new chat',
                         ),
                         Spacer(
@@ -322,8 +340,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     debugPrint('Toggling favourites is not implemented yet');
   }
 
-  void onCreateChat() {
-    debugPrint('Creating new chat is not implemented yet');
+  void onCreateChat(String name) {
+    setState(() {
+      _newChatNameInProgress = false;
+    });
+    debugPrint('Creating new chat ${name.trim()} is not implemented yet');
   }
 
   String userShortName(int userId) {
