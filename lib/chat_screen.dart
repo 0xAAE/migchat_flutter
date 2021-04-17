@@ -17,10 +17,15 @@ import 'user_widget.dart';
 
 /// Host screen widget - main window
 class ChatScreen extends StatefulWidget {
-  ChatScreen() : super(key: new ObjectKey("Main window"));
+  ChatScreen({required this.name, required this.shortName})
+      : super(key: new ObjectKey("Main window"));
+
+  final String name;
+  final String shortName;
 
   @override
-  State createState() => ChatScreenState();
+  State createState() => ChatScreenState(
+      registeredUser: UserModel(id: 0, name: name, shortName: shortName));
 }
 
 const int NOT_SELECTED = -1;
@@ -52,15 +57,17 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final StreamController _invitationsStreamController =
       StreamController<Invitation>();
 
-  UserModel registeredUser =
-      UserModel(id: 0, shortName: '0xAAE', name: 'Alexander Avramenko');
+  late UserModel registeredUser;
 
   int _selectedUser = NOT_SELECTED;
 
   int _selectedChat = NOT_SELECTED;
 
+  bool _registered = false;
   bool _onlyFavorites = false;
   bool _newChatNameInProgress = false;
+
+  ChatScreenState({required this.registeredUser});
 
   @override
   void initState() {
@@ -76,7 +83,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     // initialize Chat client service
     _service = ChatService(
         onRegistered: (int idUser) {
-          registeredUser.id = idUser;
+          setState(() {
+            registeredUser.id = idUser;
+            _registered = true;
+          });
         },
         onSendPostOk: onSendPostOk,
         onSendPostError: onSendPostError,
@@ -105,7 +115,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     var filteredPosts = _posts.where((_p) => _p.chatId == selChatId);
     var filteredCount = filteredPosts.length;
     return Scaffold(
-      appBar: AppBar(title: Text("MiGChat")),
+      appBar: AppBar(
+          title: Text(
+              "MiGChat - ${registeredUser.shortName} (${registeredUser.name})${!_registered ? ' * not logged in yet' : ''}")),
       body: Row(
         children: <Widget>[
           // users + chats
