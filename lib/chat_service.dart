@@ -367,20 +367,57 @@ class ChatService {
         }
       });
     } else {
-      var ref = grpc.ChatReference(chatId: Int64(chatId), userId: _userId);
-      grpc.ChatRoomServiceClient(_getSender()).enterChat(ref).catchError((e) {
+      var request = grpc.ChatReference(chatId: Int64(chatId), userId: _userId);
+      grpc.ChatRoomServiceClient(_getSender())
+          .enterChat(request)
+          .catchError((e) {
         if (!_isShutdown) {
           if (e is GrpcError) {
-            var ge = e as GrpcError;
-            if (ge.codeName == "ALREADY_EXISTS") {
-              return;
+            if (e.codeName == "ALREADY_EXISTS") {
+              debugPrint('already in the chat');
+            } else {
+              debugPrint("failed enter chat, ${e.message}");
             }
+          } else {
+            Future.delayed(Duration(seconds: 30), () {
+              if (!_isShutdown) {
+                enterChat(chatId);
+              }
+            });
           }
-          Future.delayed(Duration(seconds: 30), () {
-            if (!_isShutdown) {
-              enterChat(chatId);
-            }
-          });
+        }
+      });
+    }
+  }
+
+  void createChat(String name) {
+    if (_userId == null) {
+      Future.delayed(Duration(seconds: 30), () {
+        if (!_isShutdown) {
+          createChat(name);
+        }
+      });
+    } else {
+      var desiredUsers = <Int64>[_userId!];
+      var request = grpc.ChatInfo(
+          userId: _userId,
+          autoEnter: true,
+          description: name,
+          permanent: true,
+          desiredUsers: desiredUsers);
+      grpc.ChatRoomServiceClient(_getSender())
+          .createChat(request)
+          .catchError((e) {
+        if (!_isShutdown) {
+          if (e is GrpcError) {
+            debugPrint("failed create chat, ${e.message}");
+          } else {
+            Future.delayed(Duration(seconds: 30), () {
+              if (!_isShutdown) {
+                createChat(name);
+              }
+            });
+          }
         }
       });
     }

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 
-import 'bandwidth_buffer.dart';
 import 'chat_model.dart';
 import 'chat_widget.dart';
 import 'post_model.dart';
@@ -35,9 +34,6 @@ const int NOT_FOUND = -1;
 class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   /// Chat client service
   late ChatService _service;
-
-  /// Look at the https://github.com/flutter/flutter/issues/26375
-  late BandwidthBuffer _bandwidthBuffer;
 
   /// Stream controller to add posts to the ListView
   final StreamController _postsStreamController =
@@ -72,14 +68,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-
-    // initialize bandwidth buffer for chat posts display
-    _bandwidthBuffer = BandwidthBuffer<PostModel>(
-      duration: Duration(milliseconds: 500),
-      onReceive: onReceivedFromBuffer,
-    );
-    _bandwidthBuffer.start();
-
     // initialize Chat client service
     _service = ChatService(
         onRegistered: (int idUser) {
@@ -103,21 +91,15 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void dispose() {
     // close Chat client service
     _service.shutdown();
-    // close bandwidth buffer
-    _bandwidthBuffer.stop();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    var selChatId =
-        _selectedChat == NOT_SELECTED ? NO_CHAT_ID : _chats[_selectedChat].id;
-    var filteredPosts = _posts.where((_p) => _p.chatId == selChatId);
-    var filteredCount = filteredPosts.length;
     return Scaffold(
       appBar: AppBar(
           title: Text(
-              "MiGChat - ${registeredUser.shortName} (${registeredUser.name})${!_registered ? ' * not logged in yet' : ''}")),
+              "MiGChat - ${registeredUser.shortName} (${registeredUser.name}) ${!_registered ? '* not logged in yet' : 'online'}")),
       body: Row(
         children: <Widget>[
           // users + chats
@@ -153,7 +135,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           model: _users[index],
                           isSelected: _selectedUser == index,
                         );
-                        // look at the https://codelabs.developers.google.com/codelabs/flutter/#6
                         widget.animationController.forward();
                         return GestureDetector(
                             child: widget,
@@ -284,14 +265,17 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       if (snapshot.hasError) {
                         return Text("Error: ${snapshot.error}");
                       }
-                      switch (snapshot.connectionState) {
-                        case ConnectionState.none:
-                        case ConnectionState.waiting:
-                          break;
-                        case ConnectionState.active:
-                        case ConnectionState.done:
-                          _addPosts(snapshot.data);
+                      if (snapshot.connectionState == ConnectionState.done ||
+                          snapshot.connectionState == ConnectionState.active) {
+                        _addPosts(snapshot.data);
                       }
+                      var selChatId = _selectedChat == NOT_SELECTED
+                          ? NO_CHAT_ID
+                          : _chats[_selectedChat].id;
+                      var filteredPosts =
+                          _posts.where((_p) => _p.chatId == selChatId);
+                      var filteredCount = filteredPosts.length;
+                      debugPrint("displaying $filteredCount posts");
                       return ListView.builder(
                           padding: EdgeInsets.all(8.0),
                           reverse: true,
@@ -328,8 +312,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         chatId: _chats[_selectedChat].id,
         status: PostStatus.UNKNOWN);
 
-    // send message to the display stream through the bandwidth buffer
-    _bandwidthBuffer.send(post);
+    _postsStreamController.add(<PostModel>[post]);
 
     // async send message to the server
     _service.sendPost(post);
@@ -356,7 +339,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     setState(() {
       _newChatNameInProgress = false;
     });
-    debugPrint('Creating new chat ${name.trim()} is not implemented yet');
+    debugPrint('Creating new chat ${name.trim()}');
+    _service.createChat(name);
   }
 
   String userShortName(int userId) {
@@ -378,10 +362,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   /// 'outgoing message sent to the server' event
-  void onSendPostOk(OutgoingPostModel message) {
-    debugPrint("message \"${message.text.trim()}\" sent to the server");
-    // send updated message to the display stream through the bandwidth buffer
-    _bandwidthBuffer.send(message);
+  void onSendPostOk(OutgoingPostModel post) {
+    debugPrint("post \"${post.text.trim()}\" sent to the server");
+    _postsStreamController.add(<PostModel>[post]);
   }
 
   /// 'failed to send message' event
@@ -400,6 +383,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       debugPrint(
           "user has gone from the server: ${user.shortName} (${user.name})");
     }
+    setState(() {});
   }
 
   void onChatsUpdated(UpdateChats update) {
@@ -411,6 +395,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     for (var chat in update.gone) {
       debugPrint("chat has been deleted: ${chat.description}");
     }
+    setState(() {});
   }
 
   void onInvitation(Invitation invitation) {
@@ -428,15 +413,18 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   /// 'new incoming message received from the server' event
   void onPost(Post post) {
     debugPrint("received post from the server: \"${post.text.trim()}\"");
-    // send updated message to the display stream through the bandwidth buffer
-    _bandwidthBuffer.send(PostModel.from(post));
+    _postsStreamController.add(<PostModel>[PostModel.from(post)]);
+    setState(() {});
   }
 
   /// this event means 'the message (or messages) can be displayed'
   /// Look at the https://github.com/flutter/flutter/issues/26375
   void onReceivedFromBuffer(List<PostModel> posts) {
     // send message(s) to the ListView stream
+    assert(false);
     _postsStreamController.add(posts);
+    debugPrint("onReceivedFromBuffer() -> setState()");
+    setState(() {});
   }
 
   /// this methods is called to display new (outgoing or incoming) message or
