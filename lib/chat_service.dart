@@ -421,4 +421,36 @@ class ChatService {
       });
     }
   }
+
+  void createDialogWith(int userId) {
+    if (_userId == null) {
+      Future.delayed(Duration(seconds: 30), () {
+        if (!_isShutdown) {
+          createDialogWith(userId);
+        }
+      });
+    } else {
+      var request = grpc.ChatInfo(
+          userId: _userId,
+          autoEnter: true,
+          description: '', // important thing!
+          permanent: false, // also important!
+          desiredUsers: <Int64>[Int64(userId)]);
+      grpc.ChatRoomServiceClient(_getSender())
+          .createChat(request)
+          .catchError((e) {
+        if (!_isShutdown) {
+          if (e is GrpcError) {
+            debugPrint("failed create chat, ${e.message}");
+          } else {
+            Future.delayed(Duration(seconds: 30), () {
+              if (!_isShutdown) {
+                createDialogWith(userId);
+              }
+            });
+          }
+        }
+      });
+    }
+  }
 }

@@ -12,7 +12,10 @@ import 'post_widget_outgoing.dart';
 import 'chat_service.dart';
 //import 'invitation_model.dart';
 import 'user_model.dart';
-import 'user_widget.dart';
+//import 'user_widget.dart';
+
+typedef String ResolveUserName(int userId);
+typedef String ResolveChatName(int chatId);
 
 /// Host screen widget - main window
 class ChatScreen extends StatefulWidget {
@@ -41,8 +44,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   /// Chat posts list to display into ListView
   final List<PostModel> _posts = <PostModel>[];
 
-  final StreamController _usersStreamController =
-      StreamController<List<User>>();
   final List<UserModel> _users = <UserModel>[];
 
   final StreamController _chatsStreamController =
@@ -53,8 +54,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       StreamController<Invitation>();
 
   late UserModel registeredUser;
-
-  int _selectedUser = NOT_SELECTED;
 
   int _selectedChat = NOT_SELECTED;
 
@@ -104,53 +103,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           // users + chats
           Flexible(
             child: Column(children: [
-              // users
-              Flexible(
-                  child: StreamBuilder<List<User>>(
-                key: ObjectKey(_usersStreamController),
-                stream: _usersStreamController.stream as Stream<List<User>>,
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  if (snapshot.hasError) {
-                    return Text("Error: ${snapshot.error}");
-                  }
-                  switch (snapshot.connectionState) {
-                    case ConnectionState.none:
-                    case ConnectionState.waiting:
-                      break;
-                    case ConnectionState.active:
-                    case ConnectionState.done:
-                      _addUsers(snapshot.data);
-                  }
-                  return ListView.builder(
-                      padding: EdgeInsets.all(8.0),
-                      reverse: true,
-                      itemBuilder: (_, int index) {
-                        var milliseconds = _selectedUser == index ? 700 : 0;
-                        var widget = UserWidget(
-                          animationController: AnimationController(
-                            duration: Duration(milliseconds: milliseconds),
-                            vsync: this,
-                          ),
-                          model: _users[index],
-                          isSelected: _selectedUser == index,
-                        );
-                        widget.animationController.forward();
-                        return GestureDetector(
-                            child: widget,
-                            onTap: () {
-                              if (_selectedUser != index) {
-                                setState(() {
-                                  _selectedUser = index;
-                                  _selectedChat = NOT_SELECTED;
-                                });
-                              }
-                            });
-                      },
-                      itemCount: _users.length);
-                },
-              )),
-              // -----------
-              Divider(height: 1.0),
               // chats
               Flexible(
                   child: StreamBuilder<List<Chat>>(
@@ -172,21 +124,16 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       padding: EdgeInsets.all(8.0),
                       reverse: true,
                       itemBuilder: (_, int index) {
-                        var milliseconds = _selectedChat == index ? 700 : 0;
                         var widget = ChatWidget(
-                            animationController: AnimationController(
-                              duration: Duration(milliseconds: milliseconds),
-                              vsync: this,
-                            ),
-                            model: _chats[index],
-                            isSelected: _selectedChat == index);
-                        widget.animationController.forward();
+                          model: _chats[index],
+                          isSelected: _selectedChat == index,
+                          letter: chatName(_chats[index].id)[0],
+                        );
                         return GestureDetector(
                           child: widget,
                           onTap: () {
                             setState(() {
                               _selectedChat = index;
-                              _selectedUser = NOT_SELECTED;
                             });
                           },
                         );
@@ -343,6 +290,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   String userShortName(int userId) {
+    if (userId == registeredUser.id) {
+      return registeredUser.shortName;
+    }
     var i = _users.indexWhere((_u) => _u.id == userId);
     if (i != NOT_FOUND) {
       return _users[i].shortName;
@@ -351,10 +301,32 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     }
   }
 
-  String chatName(int chatId) {
-    var i = _chats.indexWhere((_c) => _c.id == chatId);
+  String userName(int userId) {
+    if (userId == registeredUser.id) {
+      return registeredUser.name;
+    }
+    var i = _users.indexWhere((_u) => _u.id == userId);
     if (i != NOT_FOUND) {
-      return _chats[i].description;
+      return _users[i].name;
+    } else {
+      return userId.toString();
+    }
+  }
+
+  String chatName(int chatId) {
+    var idxChat = _chats.indexWhere((_c) => _c.id == chatId);
+    if (idxChat != NOT_FOUND) {
+      if (_chats[idxChat].description.length > 0) {
+        return _chats[idxChat].description;
+      } else {
+        var idxId =
+            _chats[idxChat].userIds.indexWhere((id) => id != registeredUser.id);
+        if (idxId == NOT_FOUND) {
+          return '';
+        } else {
+          return userShortName(_chats[idxChat].userIds[idxId]);
+        }
+      }
     } else {
       return chatId.toString();
     }
@@ -372,11 +344,19 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   void onUsersUpdated(UpdateUsers update) {
-    for (var user in update.added) {
-      debugPrint(
-          "user has registered on the server: ${user.shortName} (${user.name})");
-      _usersStreamController.add(update.added);
-    }
+    update.added.forEach((user) {
+      // check if user with the same ID already exists
+      var i = _users.indexWhere((item) => item.id == user.id.toInt());
+      if (i != NOT_FOUND) {
+        //todo: found
+      } else {
+        var model = UserModel.from(user);
+        _users.add(model);
+        // create chat with user
+        _service.createDialogWith(model.id);
+      }
+    });
+
     for (var user in update.gone) {
       debugPrint(
           "user has gone from the server: ${user.shortName} (${user.name})");
@@ -510,21 +490,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       // check if chat widget with the same ID already exists
       var i = _chats.indexWhere((item) => item.id == chat.id.toInt());
       if (i != NOT_FOUND) {
-        _chats[i].updateUsers(chat, _users, registeredUser);
+        _chats[i].userIds = chat.users.map((v) => v.toInt()).toList();
       } else {
-        _chats.insert(0, ChatModel.from(chat, _users, registeredUser));
-      }
-    });
-  }
-
-  void _addUsers(List<User> users) {
-    users.forEach((user) {
-      // check if user widget with the same ID already exists
-      var i = _users.indexWhere((item) => item.id == user.id.toInt());
-      if (i != NOT_FOUND) {
-        //todo: found
-      } else {
-        _users.insert(0, UserModel.from(user));
+        _chats.insert(0, ChatModel.from(chat, userShortName, chatName));
       }
     });
   }

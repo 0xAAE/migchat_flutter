@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Message is class defining message data (id and text)
 class InvitationModel {
-  String from;
+  int from;
 
   /// Class constructor
   InvitationModel({required this.from});
