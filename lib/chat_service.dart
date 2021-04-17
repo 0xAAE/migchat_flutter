@@ -398,13 +398,12 @@ class ChatService {
         }
       });
     } else {
-      var desiredUsers = <Int64>[_userId!];
       var request = grpc.ChatInfo(
-          userId: _userId,
-          autoEnter: true,
-          description: name,
-          permanent: true,
-          desiredUsers: desiredUsers);
+        userId: _userId,
+        autoEnter: true,
+        description: name,
+        permanent: true,
+      );
       grpc.ChatRoomServiceClient(_getSender())
           .createChat(request)
           .catchError((e) {

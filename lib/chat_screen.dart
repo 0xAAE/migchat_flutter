@@ -36,8 +36,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late ChatService _service;
 
   /// Stream controller to add posts to the ListView
-  final StreamController _postsStreamController =
-      StreamController<List<PostModel>>();
+  final StreamController _postsStreamController = StreamController<PostModel>();
 
   /// Chat posts list to display into ListView
   final List<PostModel> _posts = <PostModel>[];
@@ -257,17 +256,16 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               child: Column(children: [
                 // posts
                 Flexible(
-                  child: StreamBuilder<List<PostModel>>(
+                  child: StreamBuilder<PostModel>(
                     key: ObjectKey(_postsStreamController),
-                    stream: _postsStreamController.stream
-                        as Stream<List<PostModel>>,
+                    stream: _postsStreamController.stream as Stream<PostModel>,
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
                       if (snapshot.hasError) {
                         return Text("Error: ${snapshot.error}");
                       }
                       if (snapshot.connectionState == ConnectionState.done ||
                           snapshot.connectionState == ConnectionState.active) {
-                        _addPosts(snapshot.data);
+                        _addPost(snapshot.data);
                       }
                       var selChatId = _selectedChat == NOT_SELECTED
                           ? NO_CHAT_ID
@@ -312,7 +310,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         chatId: _chats[_selectedChat].id,
         status: PostStatus.UNKNOWN);
 
-    _postsStreamController.add(<PostModel>[post]);
+    debugPrint("new outgoing post ${post.text.trim()} -> display stream");
+    _postsStreamController.add(post);
 
     // async send message to the server
     _service.sendPost(post);
@@ -364,7 +363,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   /// 'outgoing message sent to the server' event
   void onSendPostOk(OutgoingPostModel post) {
     debugPrint("post \"${post.text.trim()}\" sent to the server");
-    _postsStreamController.add(<PostModel>[post]);
   }
 
   /// 'failed to send message' event
@@ -412,81 +410,70 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   /// 'new incoming message received from the server' event
   void onPost(Post post) {
-    debugPrint("received post from the server: \"${post.text.trim()}\"");
-    _postsStreamController.add(<PostModel>[PostModel.from(post)]);
-    setState(() {});
-  }
-
-  /// this event means 'the message (or messages) can be displayed'
-  /// Look at the https://github.com/flutter/flutter/issues/26375
-  void onReceivedFromBuffer(List<PostModel> posts) {
-    // send message(s) to the ListView stream
-    assert(false);
-    _postsStreamController.add(posts);
-    debugPrint("onReceivedFromBuffer() -> setState()");
+    debugPrint(
+        'post \"${post.text.trim()}\" from the server --> display stream');
+    _postsStreamController.add(PostModel.from(post));
     setState(() {});
   }
 
   /// this methods is called to display new (outgoing or incoming) message or
   /// update status of existing outgoing message
-  void _addPosts(List<PostModel> posts) {
-    posts.forEach((post) {
-      debugPrint(
-          'new ${post.id == NO_POST_ID ? 'unconfirmed' : ''} post to display, "${post.text.trim()}"');
-      if (post.id == NO_POST_ID) {
-        if (post.userId != registeredUser.id) {
-          debugPrint('proto violation, get incoming post without ID, ignoring');
+  void _addPost(PostModel post) {
+    debugPrint(
+        'new ${post.id == NO_POST_ID ? 'unconfirmed' : ''} post to display, "${post.text.trim()}"');
+    if (post.id == NO_POST_ID) {
+      if (post.userId != registeredUser.id) {
+        debugPrint('proto violation, get incoming post without ID, ignoring');
+      } else {
+        // test if it is already seen before
+        var i = _posts.indexWhere((_p) =>
+            _p.userId == post.userId &&
+            _p.chatId == post.chatId &&
+            _p.text == post.text);
+        if (i == NOT_FOUND) {
+          // own post which is still unknown
+          _posts.insert(0, OutgoingPostModel.from(post, PostStatus.UNKNOWN));
+          debugPrint('recent unconfirmed outgoing post added to  display');
         } else {
-          // test if it is already seen before
-          var i = _posts.indexWhere((_p) =>
-              _p.userId == post.userId &&
-              _p.chatId == post.chatId &&
-              _p.text == post.text);
-          if (i == NOT_FOUND) {
+          debugPrint('ignoring duplicated unconfirmed outgoing post');
+        }
+      }
+    } else {
+      // post with actual ID
+      // test if duplicated
+      var i = _posts.indexWhere((_p) => _p.id == post.id);
+      if (i == NOT_FOUND) {
+        // test if there is our recent post
+        i = _posts.indexWhere((_p) =>
+            _p.id == NO_POST_ID &&
+            _p.userId == registeredUser.id &&
+            _p.chatId == post.chatId &&
+            _p.text == post.text);
+        if (i != NOT_FOUND) {
+          // found own recent post, update only id & status
+          _posts[i].id = post.id;
+          // must be outgoing post, update status
+          assert(_posts[i] is OutgoingPostModel);
+          var asOutgoing = _posts[i] as OutgoingPostModel;
+          asOutgoing.status = PostStatus.SENT;
+          debugPrint('recent outgoing post has been updated');
+        } else {
+          // not found, add new post to display
+          if (post.userId == registeredUser.id) {
             // own post which is still unknown
-            _posts.insert(0, OutgoingPostModel.from(post, PostStatus.UNKNOWN));
-            debugPrint('recent unconfirmed outgoing post added to  display');
+            _posts.insert(0, OutgoingPostModel.from(post, PostStatus.SENT));
+            debugPrint('recent outgoing added to display');
           } else {
-            debugPrint('ignoring duplicated unconfirmed outgoing post');
+            // other's post
+            _posts.insert(0, post);
+            debugPrint('incoming post added to display');
           }
         }
       } else {
-        // post with actual ID
-        // test if duplicated
-        var i = _posts.indexWhere((_p) => _p.id == post.id);
-        if (i == NOT_FOUND) {
-          // test if there is our recent post
-          i = _posts.indexWhere((_p) =>
-              _p.id == NO_POST_ID &&
-              _p.userId == registeredUser.id &&
-              _p.chatId == post.chatId &&
-              _p.text == post.text);
-          if (i != NOT_FOUND) {
-            // found own recent post, update only id & status
-            _posts[i].id = post.id;
-            // must be outgoing post, update status
-            assert(_posts[i] is OutgoingPostModel);
-            var asOutgoing = _posts[i] as OutgoingPostModel;
-            asOutgoing.status = PostStatus.SENT;
-            debugPrint('recent outgoing post has been updated');
-          } else {
-            // not found, add new post to display
-            if (post.userId == registeredUser.id) {
-              // own post which is still unknown
-              _posts.insert(0, OutgoingPostModel.from(post, PostStatus.SENT));
-              debugPrint('recent outgoing added to display');
-            } else {
-              // other's post
-              _posts.insert(0, post);
-              debugPrint('incoming post added to display');
-            }
-          }
-        } else {
-          // already known post, ignore
-          debugPrint('ignoring duplicated post');
-        }
+        // already known post, ignore
+        debugPrint('ignoring duplicated post');
       }
-    });
+    }
   }
 
   PostViewModel _buildPostWidget(PostModel model, {bool animated = false}) {
