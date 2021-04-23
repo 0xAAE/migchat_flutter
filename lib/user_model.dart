@@ -6,15 +6,21 @@ class UserModel {
   int id;
   String name;
   String shortName;
+  bool online;
 
   /// Class constructors
 
-  UserModel({required this.id, required this.name, required this.shortName});
+  UserModel(
+      {required this.id,
+      required this.name,
+      required this.shortName,
+      this.online = true});
 
   UserModel.from(User user)
       : id = user.id.toInt(),
         name = user.name,
-        shortName = user.shortName;
+        shortName = user.shortName,
+        online = true;
 }
 
 /// ChatMessage is base abstract class for outgoing and incoming message widgets

@@ -125,21 +125,26 @@ class Registration extends $pb.GeneratedMessage {
 class UpdateUsers extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateUsers', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'migchat'), createEmptyInstance: create)
     ..pc<User>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'added', $pb.PbFieldType.PM, subBuilder: User.create)
-    ..pc<User>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gone', $pb.PbFieldType.PM, subBuilder: User.create)
+    ..p<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offline', $pb.PbFieldType.PU6)
+    ..p<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'online', $pb.PbFieldType.PU6)
     ..hasRequiredFields = false
   ;
 
   UpdateUsers._() : super();
   factory UpdateUsers({
     $core.Iterable<User>? added,
-    $core.Iterable<User>? gone,
+    $core.Iterable<$fixnum.Int64>? offline,
+    $core.Iterable<$fixnum.Int64>? online,
   }) {
     final _result = create();
     if (added != null) {
       _result.added.addAll(added);
     }
-    if (gone != null) {
-      _result.gone.addAll(gone);
+    if (offline != null) {
+      _result.offline.addAll(offline);
+    }
+    if (online != null) {
+      _result.online.addAll(online);
     }
     return _result;
   }
@@ -168,7 +173,10 @@ class UpdateUsers extends $pb.GeneratedMessage {
   $core.List<User> get added => $_getList(0);
 
   @$pb.TagNumber(2)
-  $core.List<User> get gone => $_getList(1);
+  $core.List<$fixnum.Int64> get offline => $_getList(1);
+
+  @$pb.TagNumber(3)
+  $core.List<$fixnum.Int64> get online => $_getList(2);
 }
 
 class User extends $pb.GeneratedMessage {
@@ -248,19 +256,19 @@ class User extends $pb.GeneratedMessage {
 
 class UpdateChats extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateChats', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'migchat'), createEmptyInstance: create)
-    ..pc<Chat>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'added', $pb.PbFieldType.PM, subBuilder: Chat.create)
-    ..pc<Chat>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gone', $pb.PbFieldType.PM, subBuilder: Chat.create)
+    ..pc<Chat>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updated', $pb.PbFieldType.PM, subBuilder: Chat.create)
+    ..p<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gone', $pb.PbFieldType.PU6)
     ..hasRequiredFields = false
   ;
 
   UpdateChats._() : super();
   factory UpdateChats({
-    $core.Iterable<Chat>? added,
-    $core.Iterable<Chat>? gone,
+    $core.Iterable<Chat>? updated,
+    $core.Iterable<$fixnum.Int64>? gone,
   }) {
     final _result = create();
-    if (added != null) {
-      _result.added.addAll(added);
+    if (updated != null) {
+      _result.updated.addAll(updated);
     }
     if (gone != null) {
       _result.gone.addAll(gone);
@@ -289,10 +297,10 @@ class UpdateChats extends $pb.GeneratedMessage {
   static UpdateChats? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<Chat> get added => $_getList(0);
+  $core.List<Chat> get updated => $_getList(0);
 
   @$pb.TagNumber(2)
-  $core.List<Chat> get gone => $_getList(1);
+  $core.List<$fixnum.Int64> get gone => $_getList(1);
 }
 
 class ChatInfo extends $pb.GeneratedMessage {

@@ -356,22 +356,29 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         _service.createDialogWith(model.id);
       }
     });
-
-    for (var user in update.gone) {
-      debugPrint(
-          "user has gone from the server: ${user.shortName} (${user.name})");
+    for (var id in update.online) {
+      var i = _users.indexWhere((_u) => _u.id == id.toInt());
+      if (i != NOT_FOUND) {
+        _users[i].online = true;
+      }
+    }
+    for (var id in update.offline) {
+      var i = _users.indexWhere((_u) => _u.id == id.toInt());
+      if (i != NOT_FOUND) {
+        _users[i].online = false;
+      }
     }
     setState(() {});
   }
 
   void onChatsUpdated(UpdateChats update) {
-    for (var chat in update.added) {
+    for (var chat in update.updated) {
       debugPrint(
           "new ${chat.permanent ? 'permanent' : ''} chat has been created: ${chat.description}");
-      _chatsStreamController.add(update.added);
+      _chatsStreamController.add(update.updated);
     }
-    for (var chat in update.gone) {
-      debugPrint("chat has been deleted: ${chat.description}");
+    for (var id in update.gone) {
+      _chats.removeWhere((c) => c.id == id.toInt());
     }
     setState(() {});
   }

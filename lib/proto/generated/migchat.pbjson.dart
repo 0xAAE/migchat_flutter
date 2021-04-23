@@ -48,12 +48,13 @@ const UpdateUsers$json = const {
   '1': 'UpdateUsers',
   '2': const [
     const {'1': 'added', '3': 1, '4': 3, '5': 11, '6': '.migchat.User', '10': 'added'},
-    const {'1': 'gone', '3': 2, '4': 3, '5': 11, '6': '.migchat.User', '10': 'gone'},
+    const {'1': 'offline', '3': 2, '4': 3, '5': 4, '10': 'offline'},
+    const {'1': 'online', '3': 3, '4': 3, '5': 4, '10': 'online'},
   ],
 };
 
 /// Descriptor for `UpdateUsers`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateUsersDescriptor = $convert.base64Decode('CgtVcGRhdGVVc2VycxIjCgVhZGRlZBgBIAMoCzINLm1pZ2NoYXQuVXNlclIFYWRkZWQSIQoEZ29uZRgCIAMoCzINLm1pZ2NoYXQuVXNlclIEZ29uZQ==');
+final $typed_data.Uint8List updateUsersDescriptor = $convert.base64Decode('CgtVcGRhdGVVc2VycxIjCgVhZGRlZBgBIAMoCzINLm1pZ2NoYXQuVXNlclIFYWRkZWQSGAoHb2ZmbGluZRgCIAMoBFIHb2ZmbGluZRIWCgZvbmxpbmUYAyADKARSBm9ubGluZQ==');
 @$core.Deprecated('Use userDescriptor instead')
 const User$json = const {
   '1': 'User',
@@ -70,13 +71,13 @@ final $typed_data.Uint8List userDescriptor = $convert.base64Decode('CgRVc2VyEg4K
 const UpdateChats$json = const {
   '1': 'UpdateChats',
   '2': const [
-    const {'1': 'added', '3': 1, '4': 3, '5': 11, '6': '.migchat.Chat', '10': 'added'},
-    const {'1': 'gone', '3': 2, '4': 3, '5': 11, '6': '.migchat.Chat', '10': 'gone'},
+    const {'1': 'updated', '3': 1, '4': 3, '5': 11, '6': '.migchat.Chat', '10': 'updated'},
+    const {'1': 'gone', '3': 2, '4': 3, '5': 4, '10': 'gone'},
   ],
 };
 
 /// Descriptor for `UpdateChats`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateChatsDescriptor = $convert.base64Decode('CgtVcGRhdGVDaGF0cxIjCgVhZGRlZBgBIAMoCzINLm1pZ2NoYXQuQ2hhdFIFYWRkZWQSIQoEZ29uZRgCIAMoCzINLm1pZ2NoYXQuQ2hhdFIEZ29uZQ==');
+final $typed_data.Uint8List updateChatsDescriptor = $convert.base64Decode('CgtVcGRhdGVDaGF0cxInCgd1cGRhdGVkGAEgAygLMg0ubWlnY2hhdC5DaGF0Ugd1cGRhdGVkEhIKBGdvbmUYAiADKARSBGdvbmU=');
 @$core.Deprecated('Use chatInfoDescriptor instead')
 const ChatInfo$json = const {
   '1': 'ChatInfo',
