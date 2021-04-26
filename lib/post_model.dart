@@ -7,6 +7,9 @@ class PostModel {
   int userId;
   int chatId;
   String text;
+  bool _viewed = false;
+
+  bool get viewed => _viewOnce();
 
   PostModel(
       {required this.id,
@@ -19,6 +22,15 @@ class PostModel {
         userId = post.userId.toInt(),
         chatId = post.chatId.toInt(),
         id = post.id.toInt();
+
+  bool _viewOnce() {
+    if (_viewed) {
+      return true;
+    } else {
+      _viewed = true;
+      return false;
+    }
+  }
 }
 
 /// Outgoing message statuses

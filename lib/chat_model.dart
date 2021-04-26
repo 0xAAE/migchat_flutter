@@ -14,17 +14,9 @@ class ChatModel {
   List<InvitationModel> invitations;
   ResolveUserName resolveUserName;
   ResolveChatName resolveChatName;
+  bool _viewed = false;
 
   /// Class constructors
-
-  // ChatModel(
-  //     {required this.id,
-  //     required this.permanent,
-  //     required this.description,
-  //     required this.resolveUserName,
-  //     required this.resolveChatName})
-  //     : userIds = <int>[],
-  //       invitations = <InvitationModel>[];
 
   ChatModel.from(Chat chat, ResolveUserName resolveUserName,
       ResolveChatName resolveChatName)
@@ -40,11 +32,25 @@ class ChatModel {
     invitations.add(InvitationModel(from: user.id));
   }
 
+  bool _viewOnce() {
+    if (_viewed) {
+      return true;
+    } else {
+      _viewed = true;
+      return false;
+    }
+  }
+
   String get members => userIds.map((id) => resolveUserName(id)).join(', ');
 
   String get name => resolveChatName(id);
+
+  bool get viewed => _viewOnce();
 }
 
 abstract class ChatViewModel extends Widget {
   ChatModel get model;
+
+  /// Controller of animation for widget
+  AnimationController get animationController;
 }

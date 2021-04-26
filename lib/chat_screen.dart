@@ -89,6 +89,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("displaying ${_chats.length} chats");
     var selChatId =
         _selectedChat == NOT_SELECTED ? NO_CHAT_ID : _chats[_selectedChat].id;
     var filteredPosts = _posts.where((_p) => _p.chatId == selChatId);
@@ -110,11 +111,18 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     padding: EdgeInsets.all(8.0),
                     reverse: true,
                     itemBuilder: (_, int index) {
+                      var animationController = AnimationController(
+                        duration: Duration(
+                            milliseconds: !_chats[index].viewed ? 700 : 0),
+                        vsync: this,
+                      );
                       var widget = ChatWidget(
+                        animationController: animationController,
                         model: _chats[index],
                         isSelected: _selectedChat == index,
                         letter: chatName(_chats[index].id)[0],
                       );
+                      animationController.forward();
                       return GestureDetector(
                         child: widget,
                         onTap: () {
@@ -316,7 +324,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         //todo: found
       } else {
         var model = UserModel.from(user);
-        _users.add(model);
+        setState(() {
+          _users.add(model);
+        });
         // create chat with user
         _service.createDialogWith(model.id);
       }
@@ -324,26 +334,30 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     for (var id in update.online) {
       var i = _users.indexWhere((_u) => _u.id == id.toInt());
       if (i != NOT_FOUND) {
-        _users[i].online = true;
+        setState(() {
+          _users[i].online = true;
+        });
       }
     }
     for (var id in update.offline) {
       var i = _users.indexWhere((_u) => _u.id == id.toInt());
       if (i != NOT_FOUND) {
-        _users[i].online = false;
+        setState(() {
+          _users[i].online = false;
+        });
       }
     }
-    setState(() {});
   }
 
   void onChatsUpdated(UpdateChats update) {
-    if (update.updated.length > 0) {
-      _addChats(update.updated);
-    }
-    for (var id in update.gone) {
-      _chats.removeWhere((c) => c.id == id.toInt());
-    }
-    setState(() {});
+    setState(() {
+      if (update.updated.length > 0) {
+        _addChats(update.updated);
+      }
+      for (var id in update.gone) {
+        _chats.removeWhere((c) => c.id == id.toInt());
+      }
+    });
   }
 
   void onInvitation(Invitation invitation) {
@@ -382,7 +396,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             _p.text == post.text);
         if (i == NOT_FOUND) {
           // own post which is still unknown
-          _posts.insert(0, OutgoingPostModel.from(post, PostStatus.UNKNOWN));
+          setState(() {
+            _posts.insert(0, OutgoingPostModel.from(post, PostStatus.UNKNOWN));
+          });
           debugPrint('recent unconfirmed outgoing post added to  display');
         } else {
           debugPrint('ignoring duplicated unconfirmed outgoing post');
@@ -401,21 +417,27 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             _p.text == post.text);
         if (i != NOT_FOUND) {
           // found own recent post, update only id & status
-          _posts[i].id = post.id;
-          // must be outgoing post, update status
-          assert(_posts[i] is OutgoingPostModel);
-          var asOutgoing = _posts[i] as OutgoingPostModel;
-          asOutgoing.status = PostStatus.SENT;
+          setState(() {
+            _posts[i].id = post.id;
+            // must be outgoing post, update status
+            assert(_posts[i] is OutgoingPostModel);
+            var asOutgoing = _posts[i] as OutgoingPostModel;
+            asOutgoing.status = PostStatus.SENT;
+          });
           debugPrint('recent outgoing post has been updated');
         } else {
           // not found, add new post to display
           if (post.userId == registeredUser.id) {
             // own post which is still unknown
-            _posts.insert(0, OutgoingPostModel.from(post, PostStatus.SENT));
+            setState(() {
+              _posts.insert(0, OutgoingPostModel.from(post, PostStatus.SENT));
+            });
             debugPrint('recent outgoing added to display');
           } else {
             // other's post
-            _posts.insert(0, post);
+            setState(() {
+              _posts.insert(0, post);
+            });
             debugPrint('incoming post added to display');
           }
         }
@@ -426,11 +448,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     }
   }
 
-  PostViewModel _buildPostWidget(PostModel model, {bool animated = false}) {
+  PostViewModel _buildPostWidget(PostModel model) {
     // new message
     PostViewModel widget;
     var animationController = AnimationController(
-      duration: Duration(milliseconds: animated ? 700 : 0),
+      duration: Duration(milliseconds: !model.viewed ? 700 : 0),
       vsync: this,
     );
     switch (model.runtimeType) {
