@@ -38,16 +38,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   /// Chat client service
   late ChatService _service;
 
-  /// Stream controller to add posts to the ListView
-  final StreamController _postsStreamController = StreamController<PostModel>();
-
   /// Chat posts list to display into ListView
   final List<PostModel> _posts = <PostModel>[];
 
   final List<UserModel> _users = <UserModel>[];
 
-  final StreamController _chatsStreamController =
-      StreamController<List<Chat>>();
   final List<ChatModel> _chats = <ChatModel>[];
 
   final StreamController _invitationsStreamController =
@@ -94,6 +89,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    var selChatId =
+        _selectedChat == NOT_SELECTED ? NO_CHAT_ID : _chats[_selectedChat].id;
+    var filteredPosts = _posts.where((_p) => _p.chatId == selChatId);
+    var filteredCount = filteredPosts.length;
+    debugPrint("displaying $filteredCount posts");
+
     return Scaffold(
       appBar: AppBar(
           title: Text(
@@ -105,42 +106,26 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             child: Column(children: [
               // chats
               Flexible(
-                  child: StreamBuilder<List<Chat>>(
-                key: ObjectKey(_chatsStreamController),
-                stream: _chatsStreamController.stream as Stream<List<Chat>>,
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  if (snapshot.hasError) {
-                    return Text("Error: ${snapshot.error}");
-                  }
-                  switch (snapshot.connectionState) {
-                    case ConnectionState.none:
-                    case ConnectionState.waiting:
-                      break;
-                    case ConnectionState.active:
-                    case ConnectionState.done:
-                      _addChats(snapshot.data);
-                  }
-                  return ListView.builder(
-                      padding: EdgeInsets.all(8.0),
-                      reverse: true,
-                      itemBuilder: (_, int index) {
-                        var widget = ChatWidget(
-                          model: _chats[index],
-                          isSelected: _selectedChat == index,
-                          letter: chatName(_chats[index].id)[0],
-                        );
-                        return GestureDetector(
-                          child: widget,
-                          onTap: () {
-                            setState(() {
-                              _selectedChat = index;
-                            });
-                          },
-                        );
-                      },
-                      itemCount: _chats.length);
-                },
-              )),
+                child: ListView.builder(
+                    padding: EdgeInsets.all(8.0),
+                    reverse: true,
+                    itemBuilder: (_, int index) {
+                      var widget = ChatWidget(
+                        model: _chats[index],
+                        isSelected: _selectedChat == index,
+                        letter: chatName(_chats[index].id)[0],
+                      );
+                      return GestureDetector(
+                        child: widget,
+                        onTap: () {
+                          setState(() {
+                            _selectedChat = index;
+                          });
+                        },
+                      );
+                    },
+                    itemCount: _chats.length),
+              ),
               if (_newChatNameInProgress)
                 TextFormField(
                   maxLength: 50,
@@ -203,32 +188,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               child: Column(children: [
                 // posts
                 Flexible(
-                  child: StreamBuilder<PostModel>(
-                    key: ObjectKey(_postsStreamController),
-                    stream: _postsStreamController.stream as Stream<PostModel>,
-                    builder: (BuildContext context, AsyncSnapshot snapshot) {
-                      if (snapshot.hasError) {
-                        return Text("Error: ${snapshot.error}");
-                      }
-                      if (snapshot.connectionState == ConnectionState.done ||
-                          snapshot.connectionState == ConnectionState.active) {
-                        _addPost(snapshot.data);
-                      }
-                      var selChatId = _selectedChat == NOT_SELECTED
-                          ? NO_CHAT_ID
-                          : _chats[_selectedChat].id;
-                      var filteredPosts =
-                          _posts.where((_p) => _p.chatId == selChatId);
-                      var filteredCount = filteredPosts.length;
-                      debugPrint("displaying $filteredCount posts");
-                      return ListView.builder(
-                          padding: EdgeInsets.all(8.0),
-                          reverse: true,
-                          itemBuilder: (_, int index) =>
-                              _buildPostWidget(filteredPosts.elementAt(index)),
-                          itemCount: filteredCount);
-                    },
-                  ),
+                  child: ListView.builder(
+                      padding: EdgeInsets.all(8.0),
+                      reverse: true,
+                      itemBuilder: (_, int index) =>
+                          _buildPostWidget(filteredPosts.elementAt(index)),
+                      itemCount: filteredCount),
                 ),
                 // --------------------
                 Divider(height: 1.0),
@@ -258,7 +223,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         status: PostStatus.UNKNOWN);
 
     debugPrint("new outgoing post ${post.text.trim()} -> display stream");
-    _postsStreamController.add(post);
+    _addPost(post);
 
     // async send message to the server
     _service.sendPost(post);
@@ -372,10 +337,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   void onChatsUpdated(UpdateChats update) {
-    for (var chat in update.updated) {
-      debugPrint(
-          "new ${chat.permanent ? 'permanent' : ''} chat has been created: ${chat.description}");
-      _chatsStreamController.add(update.updated);
+    if (update.updated.length > 0) {
+      _addChats(update.updated);
     }
     for (var id in update.gone) {
       _chats.removeWhere((c) => c.id == id.toInt());
@@ -399,7 +362,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void onPost(Post post) {
     debugPrint(
         'post \"${post.text.trim()}\" from the server --> display stream');
-    _postsStreamController.add(PostModel.from(post));
+    _addPost(PostModel.from(post));
     setState(() {});
   }
 
