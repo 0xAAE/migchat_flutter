@@ -27,7 +27,8 @@ class ChatScreen extends StatefulWidget {
 
   @override
   State createState() => ChatScreenState(
-      registeredUser: UserModel(id: 0, name: name, shortName: shortName));
+      registeredUser: UserModel(
+          id: 0, name: name, shortName: shortName, created: DateTime.now()));
 }
 
 const int NOT_SELECTED = -1;

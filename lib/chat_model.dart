@@ -12,6 +12,7 @@ class ChatModel {
   String description;
   List<int> userIds;
   List<InvitationModel> invitations;
+  DateTime created;
   ResolveUserName resolveUserName;
   ResolveChatName resolveChatName;
   bool _viewed = false;
@@ -24,6 +25,8 @@ class ChatModel {
         permanent = chat.permanent,
         description = chat.description,
         userIds = chat.users.map((v) => v.toInt()).toList(),
+        created =
+            DateTime.fromMillisecondsSinceEpoch(chat.created.toInt() * 1000),
         invitations = <InvitationModel>[],
         resolveUserName = resolveUserName,
         resolveChatName = resolveChatName;
