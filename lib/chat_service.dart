@@ -40,7 +40,7 @@ class ChatService {
 
   // receive streams methods
 
-  final void Function(int userId) onRegistered;
+  final void Function(int userId, DateTime created) onRegistered;
   final void Function(grpc.Invitation invitation) onInvitation;
   final void Function(grpc.UpdateUsers update) onUsersUpdated;
   final void Function(grpc.UpdateChats update) onChatsUpdated;
@@ -216,8 +216,9 @@ class ChatService {
     }
     var request = grpc.UserInfo(name: name, shortName: shortName);
     grpc.ChatRoomServiceClient(_getSender()).register(request).then((response) {
-      _userId = response.userId;
-      onRegistered(response.userId.toInt());
+      _userId = response.registration.userId;
+      onRegistered(response.registration.userId.toInt(),
+          DateTime.fromMillisecondsSinceEpoch(response.created.toInt()));
       _startListeningUsers();
       _startListeningInvitations();
       _startListeningChats();

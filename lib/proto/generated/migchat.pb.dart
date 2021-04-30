@@ -122,6 +122,69 @@ class Registration extends $pb.GeneratedMessage {
   void clearUserId() => clearField(1);
 }
 
+class RegistrationInfo extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RegistrationInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'migchat'), createEmptyInstance: create)
+    ..aOM<Registration>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'registration', subBuilder: Registration.create)
+    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'created', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..hasRequiredFields = false
+  ;
+
+  RegistrationInfo._() : super();
+  factory RegistrationInfo({
+    Registration? registration,
+    $fixnum.Int64? created,
+  }) {
+    final _result = create();
+    if (registration != null) {
+      _result.registration = registration;
+    }
+    if (created != null) {
+      _result.created = created;
+    }
+    return _result;
+  }
+  factory RegistrationInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RegistrationInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RegistrationInfo clone() => RegistrationInfo()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RegistrationInfo copyWith(void Function(RegistrationInfo) updates) => super.copyWith((message) => updates(message as RegistrationInfo)) as RegistrationInfo; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static RegistrationInfo create() => RegistrationInfo._();
+  RegistrationInfo createEmptyInstance() => create();
+  static $pb.PbList<RegistrationInfo> createRepeated() => $pb.PbList<RegistrationInfo>();
+  @$core.pragma('dart2js:noInline')
+  static RegistrationInfo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RegistrationInfo>(create);
+  static RegistrationInfo? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Registration get registration => $_getN(0);
+  @$pb.TagNumber(1)
+  set registration(Registration v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasRegistration() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRegistration() => clearField(1);
+  @$pb.TagNumber(1)
+  Registration ensureRegistration() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get created => $_getI64(1);
+  @$pb.TagNumber(2)
+  set created($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCreated() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCreated() => clearField(2);
+}
+
 class UpdateUsers extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateUsers', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'migchat'), createEmptyInstance: create)
     ..pc<User>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'added', $pb.PbFieldType.PM, subBuilder: User.create)

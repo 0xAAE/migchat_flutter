@@ -64,9 +64,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     super.initState();
     // initialize Chat client service
     _service = ChatService(
-        onRegistered: (int idUser) {
+        onRegistered: (int idUser, DateTime created) {
           setState(() {
             registeredUser.id = idUser;
+            registeredUser.created = created;
             _registered = true;
           });
         },

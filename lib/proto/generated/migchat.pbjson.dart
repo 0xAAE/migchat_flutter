@@ -43,6 +43,17 @@ const Registration$json = const {
 
 /// Descriptor for `Registration`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List registrationDescriptor = $convert.base64Decode('CgxSZWdpc3RyYXRpb24SFwoHdXNlcl9pZBgBIAEoBFIGdXNlcklk');
+@$core.Deprecated('Use registrationInfoDescriptor instead')
+const RegistrationInfo$json = const {
+  '1': 'RegistrationInfo',
+  '2': const [
+    const {'1': 'registration', '3': 1, '4': 1, '5': 11, '6': '.migchat.Registration', '10': 'registration'},
+    const {'1': 'created', '3': 2, '4': 1, '5': 4, '10': 'created'},
+  ],
+};
+
+/// Descriptor for `RegistrationInfo`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List registrationInfoDescriptor = $convert.base64Decode('ChBSZWdpc3RyYXRpb25JbmZvEjkKDHJlZ2lzdHJhdGlvbhgBIAEoCzIVLm1pZ2NoYXQuUmVnaXN0cmF0aW9uUgxyZWdpc3RyYXRpb24SGAoHY3JlYXRlZBgCIAEoBFIHY3JlYXRlZA==');
 @$core.Deprecated('Use updateUsersDescriptor instead')
 const UpdateUsers$json = const {
   '1': 'UpdateUsers',
