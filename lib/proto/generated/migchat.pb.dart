@@ -122,6 +122,69 @@ class Registration extends $pb.GeneratedMessage {
   void clearUserId() => clearField(1);
 }
 
+class RegistrationInfo extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RegistrationInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'migchat'), createEmptyInstance: create)
+    ..aOM<Registration>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'registration', subBuilder: Registration.create)
+    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'created', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..hasRequiredFields = false
+  ;
+
+  RegistrationInfo._() : super();
+  factory RegistrationInfo({
+    Registration? registration,
+    $fixnum.Int64? created,
+  }) {
+    final _result = create();
+    if (registration != null) {
+      _result.registration = registration;
+    }
+    if (created != null) {
+      _result.created = created;
+    }
+    return _result;
+  }
+  factory RegistrationInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RegistrationInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RegistrationInfo clone() => RegistrationInfo()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RegistrationInfo copyWith(void Function(RegistrationInfo) updates) => super.copyWith((message) => updates(message as RegistrationInfo)) as RegistrationInfo; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static RegistrationInfo create() => RegistrationInfo._();
+  RegistrationInfo createEmptyInstance() => create();
+  static $pb.PbList<RegistrationInfo> createRepeated() => $pb.PbList<RegistrationInfo>();
+  @$core.pragma('dart2js:noInline')
+  static RegistrationInfo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RegistrationInfo>(create);
+  static RegistrationInfo? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Registration get registration => $_getN(0);
+  @$pb.TagNumber(1)
+  set registration(Registration v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasRegistration() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRegistration() => clearField(1);
+  @$pb.TagNumber(1)
+  Registration ensureRegistration() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get created => $_getI64(1);
+  @$pb.TagNumber(2)
+  set created($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCreated() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCreated() => clearField(2);
+}
+
 class UpdateUsers extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateUsers', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'migchat'), createEmptyInstance: create)
     ..pc<User>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'added', $pb.PbFieldType.PM, subBuilder: User.create)
@@ -184,6 +247,7 @@ class User extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'shortName')
+    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'created', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..hasRequiredFields = false
   ;
 
@@ -192,6 +256,7 @@ class User extends $pb.GeneratedMessage {
     $fixnum.Int64? id,
     $core.String? name,
     $core.String? shortName,
+    $fixnum.Int64? created,
   }) {
     final _result = create();
     if (id != null) {
@@ -202,6 +267,9 @@ class User extends $pb.GeneratedMessage {
     }
     if (shortName != null) {
       _result.shortName = shortName;
+    }
+    if (created != null) {
+      _result.created = created;
     }
     return _result;
   }
@@ -252,6 +320,15 @@ class User extends $pb.GeneratedMessage {
   $core.bool hasShortName() => $_has(2);
   @$pb.TagNumber(3)
   void clearShortName() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get created => $_getI64(3);
+  @$pb.TagNumber(4)
+  set created($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCreated() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCreated() => clearField(4);
 }
 
 class UpdateChats extends $pb.GeneratedMessage {
@@ -406,6 +483,7 @@ class Chat extends $pb.GeneratedMessage {
     ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'permanent')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..p<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'users', $pb.PbFieldType.PU6)
+    ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'created', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..hasRequiredFields = false
   ;
 
@@ -415,6 +493,7 @@ class Chat extends $pb.GeneratedMessage {
     $core.bool? permanent,
     $core.String? description,
     $core.Iterable<$fixnum.Int64>? users,
+    $fixnum.Int64? created,
   }) {
     final _result = create();
     if (id != null) {
@@ -428,6 +507,9 @@ class Chat extends $pb.GeneratedMessage {
     }
     if (users != null) {
       _result.users.addAll(users);
+    }
+    if (created != null) {
+      _result.created = created;
     }
     return _result;
   }
@@ -481,6 +563,15 @@ class Chat extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(4)
   $core.List<$fixnum.Int64> get users => $_getList(3);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get created => $_getI64(4);
+  @$pb.TagNumber(5)
+  set created($fixnum.Int64 v) { $_setInt64(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCreated() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCreated() => clearField(5);
 }
 
 class ChatReference extends $pb.GeneratedMessage {
@@ -761,6 +852,7 @@ class Post extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'chatId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'text')
+    ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'created', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..pc<Attachment>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'attachments', $pb.PbFieldType.PM, subBuilder: Attachment.create)
     ..hasRequiredFields = false
   ;
@@ -771,6 +863,7 @@ class Post extends $pb.GeneratedMessage {
     $fixnum.Int64? userId,
     $fixnum.Int64? chatId,
     $core.String? text,
+    $fixnum.Int64? created,
     $core.Iterable<Attachment>? attachments,
   }) {
     final _result = create();
@@ -785,6 +878,9 @@ class Post extends $pb.GeneratedMessage {
     }
     if (text != null) {
       _result.text = text;
+    }
+    if (created != null) {
+      _result.created = created;
     }
     if (attachments != null) {
       _result.attachments.addAll(attachments);
@@ -848,7 +944,16 @@ class Post extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   void clearText() => clearField(4);
 
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get created => $_getI64(4);
+  @$pb.TagNumber(5)
+  set created($fixnum.Int64 v) { $_setInt64(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCreated() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCreated() => clearField(5);
+
   @$pb.TagNumber(9)
-  $core.List<Attachment> get attachments => $_getList(4);
+  $core.List<Attachment> get attachments => $_getList(5);
 }
 

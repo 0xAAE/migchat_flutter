@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
+import 'package:intl/intl.dart';
 
 /// Message is class defining message data (id and text)
 class PostModel {
@@ -8,6 +9,7 @@ class PostModel {
   int chatId;
   String text;
   bool _viewed = false;
+  DateTime created;
 
   bool get viewed => _viewOnce();
 
@@ -15,13 +17,16 @@ class PostModel {
       {required this.id,
       required this.userId,
       required this.chatId,
-      required this.text});
+      required this.text,
+      required this.created});
 
   PostModel.from(Post post)
       : text = post.text,
         userId = post.userId.toInt(),
         chatId = post.chatId.toInt(),
-        id = post.id.toInt();
+        id = post.id.toInt(),
+        created =
+            DateTime.fromMillisecondsSinceEpoch(post.created.toInt() * 1000);
 
   bool _viewOnce() {
     if (_viewed) {
@@ -31,6 +36,13 @@ class PostModel {
       return false;
     }
   }
+
+  String _formatCreated() {
+    final DateFormat formatter = DateFormat('dd.MM.yyyy H:mm');
+    return formatter.format(created);
+  }
+
+  String get createdText => _formatCreated();
 }
 
 /// Outgoing message statuses
@@ -51,7 +63,12 @@ class OutgoingPostModel extends PostModel {
       required int chatId,
       required String text,
       this.status = PostStatus.UNKNOWN})
-      : super(id: NO_POST_ID, userId: userId, chatId: chatId, text: text);
+      : super(
+            id: NO_POST_ID,
+            userId: userId,
+            chatId: chatId,
+            text: text,
+            created: DateTime.now());
 
   OutgoingPostModel.from(PostModel post, PostStatus status)
       : status = status,
@@ -59,7 +76,8 @@ class OutgoingPostModel extends PostModel {
             id: post.id,
             userId: post.userId,
             chatId: post.chatId,
-            text: post.text);
+            text: post.text,
+            created: post.created);
 }
 
 abstract class PostViewModel extends Widget {

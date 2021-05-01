@@ -27,7 +27,8 @@ class ChatScreen extends StatefulWidget {
 
   @override
   State createState() => ChatScreenState(
-      registeredUser: UserModel(id: 0, name: name, shortName: shortName));
+      registeredUser: UserModel(
+          id: 0, name: name, shortName: shortName, created: DateTime.now()));
 }
 
 const int NOT_SELECTED = -1;
@@ -63,9 +64,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     super.initState();
     // initialize Chat client service
     _service = ChatService(
-        onRegistered: (int idUser) {
+        onRegistered: (int idUser, DateTime created) {
           setState(() {
             registeredUser.id = idUser;
+            registeredUser.created = created;
             _registered = true;
           });
         },
@@ -126,9 +128,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       return GestureDetector(
                         child: widget,
                         onTap: () {
-                          setState(() {
-                            _selectedChat = index;
-                          });
+                          if (_selectedChat != index) {
+                            setState(() {
+                              _selectedChat = index;
+                            });
+                          }
                         },
                       );
                     },
