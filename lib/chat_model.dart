@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 import 'package:migchat_flutter/user_model.dart';
+import 'package:intl/intl.dart';
 import 'invitation_model.dart';
 import 'chat_screen.dart';
 
@@ -49,6 +50,13 @@ class ChatModel {
   String get name => resolveChatName(id);
 
   bool get viewed => _viewOnce();
+
+  String _formatCreated() {
+    final DateFormat formatter = DateFormat('dd.MM.yyyy H:mm');
+    return formatter.format(created);
+  }
+
+  String get createdText => _formatCreated();
 }
 
 abstract class ChatViewModel extends Widget {

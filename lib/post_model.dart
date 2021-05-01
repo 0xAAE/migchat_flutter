@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
+import 'package:intl/intl.dart';
 
 /// Message is class defining message data (id and text)
 class PostModel {
@@ -35,6 +36,13 @@ class PostModel {
       return false;
     }
   }
+
+  String _formatCreated() {
+    final DateFormat formatter = DateFormat('dd.MM.yyyy H:mm');
+    return formatter.format(created);
+  }
+
+  String get createdText => _formatCreated();
 }
 
 /// Outgoing message statuses

@@ -97,7 +97,8 @@ class OutgoingPostState extends State<OutgoingPostWidget> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(name, style: Theme.of(context).textTheme.subtitle1),
+                  Text("$name (${controller.model.createdText})",
+                      style: Theme.of(context).textTheme.overline),
                   Container(
                     margin: EdgeInsets.only(top: 5.0),
                     child: Text(

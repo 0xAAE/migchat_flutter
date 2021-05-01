@@ -36,7 +36,8 @@ class IncomingPostWidget extends StatelessWidget implements PostViewModel {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: <Widget>[
-                  Text(author, style: Theme.of(context).textTheme.subtitle1),
+                  Text("$author (${model.createdText})",
+                      style: Theme.of(context).textTheme.overline),
                   Container(
                     margin: EdgeInsets.only(top: 5.0),
                     child: Text(model.text),

@@ -128,9 +128,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       return GestureDetector(
                         child: widget,
                         onTap: () {
-                          setState(() {
-                            _selectedChat = index;
-                          });
+                          if (_selectedChat != index) {
+                            setState(() {
+                              _selectedChat = index;
+                            });
+                          }
                         },
                       );
                     },

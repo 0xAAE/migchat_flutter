@@ -339,10 +339,7 @@ class ChatService {
       });
     } else {
       var post = grpc.Post(
-          id: Int64(model.id),
-          userId: _userId,
-          chatId: Int64(model.chatId),
-          text: model.text);
+          userId: _userId, chatId: Int64(model.chatId), text: model.text);
       grpc.ChatRoomServiceClient(_getSender()).createPost(post).then((_) {
         model.status = PostStatus.UNKNOWN;
         onSendPostOk(model);
