@@ -53,6 +53,14 @@ class UserWidget extends StatelessWidget implements UserViewModel {
                     ],
                   ),
                 ),
+                Container(
+                  child: IconButton(
+                    icon: const Icon(Icons.info_outline),
+                    tooltip: "User registered on ${model.createdText}",
+                    onPressed: () =>
+                        {debugPrint("User registered on ${model.createdText}")},
+                  ),
+                )
               ],
             ),
           ),

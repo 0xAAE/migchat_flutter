@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
+import 'package:intl/intl.dart';
 
 /// Message is class defining message data (id and text)
 class UserModel {
   int id;
   String name;
   String shortName;
+  DateTime created;
   bool online;
 
   /// Class constructors
@@ -14,13 +16,23 @@ class UserModel {
       {required this.id,
       required this.name,
       required this.shortName,
+      required this.created,
       this.online = true});
 
   UserModel.from(User user)
       : id = user.id.toInt(),
         name = user.name,
         shortName = user.shortName,
+        created =
+            DateTime.fromMillisecondsSinceEpoch(user.created.toInt() * 1000),
         online = true;
+
+  String _formatCreated() {
+    final DateFormat formatter = DateFormat('dd.MM.yyyy');
+    return formatter.format(created);
+  }
+
+  String get createdText => _formatCreated();
 }
 
 /// ChatMessage is base abstract class for outgoing and incoming message widgets
