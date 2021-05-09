@@ -10,9 +10,8 @@ import 'post_composer_widget.dart';
 import 'post_widget_incoming.dart';
 import 'post_widget_outgoing.dart';
 import 'chat_service.dart';
-//import 'invitation_model.dart';
 import 'user_model.dart';
-//import 'user_widget.dart';
+import 'layout/adaptive.dart';
 
 typedef String ResolveUserName(int userId);
 typedef String ResolveChatName(int chatId);
@@ -34,6 +33,16 @@ class ChatScreen extends StatefulWidget {
 const int NOT_SELECTED = -1;
 const int NOT_FOUND = -1;
 
+class Selection {
+  int _selectedChat = NOT_SELECTED;
+
+  int get chat => _selectedChat;
+
+  set chat(int i) => _selectedChat = i;
+
+  bool get chatSelected => _selectedChat != NOT_SELECTED;
+}
+
 /// State for ChatScreen widget
 class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   /// Chat client service
@@ -51,7 +60,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   late UserModel registeredUser;
 
-  int _selectedChat = NOT_SELECTED;
+  Selection _current = Selection();
 
   bool _registered = false;
   bool _onlyFavorites = false;
@@ -93,145 +102,325 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     debugPrint("displaying ${_chats.length} chats");
     var selChatId =
-        _selectedChat == NOT_SELECTED ? NO_CHAT_ID : _chats[_selectedChat].id;
+        _current.chat == NOT_SELECTED ? NO_CHAT_ID : _chats[_current.chat].id;
     var filteredPosts = _posts.where((_p) => _p.chatId == selChatId);
     var filteredCount = filteredPosts.length;
     debugPrint("displaying $filteredCount posts");
+    final isDesktop = isDisplayDesktop(context);
+    if (isDesktop) {
+      return Scaffold(
+          appBar: _buildAppBar(),
+          body: Row(
+            children: [
+              _buildChatsDrawer(_chats, _current),
+              const VerticalDivider(width: 1),
+              Expanded(
+                  child:
+                      _buildBodyWidget(_current.chatSelected, filteredPosts)),
+            ],
+          ));
+    } else {
+      return Scaffold(
+        appBar: _buildAppBar(),
+        body: _buildBodyWidget(_current.chatSelected, filteredPosts),
+        drawer: _buildChatsDrawer(_chats, _current),
+        // floatingActionButton: FloatingActionButton(
+        //   heroTag: 'Add',
+        //   onPressed: () {},
+        //   tooltip: GalleryLocalizations.of(context).starterAppTooltipAdd,
+        //   child: Icon(
+        //     Icons.add,
+        //     color: Theme.of(context).colorScheme.onSecondary,
+        //   ),
+        // ),
+      );
+    }
+  }
 
-    return Scaffold(
-      appBar: AppBar(
-          title: Text(
-              "MiGChat - ${registeredUser.shortName} (${registeredUser.name}) ${!_registered ? '* not logged in yet' : 'online'}")),
-      body: Row(
-        children: <Widget>[
-          // users + chats
-          Flexible(
-            child: Column(children: [
-              // chats
-              Flexible(
-                child: ListView.builder(
-                    padding: EdgeInsets.all(8.0),
-                    reverse: true,
-                    itemBuilder: (_, int index) {
-                      var animationController = AnimationController(
-                        duration: Duration(
-                            milliseconds: !_chats[index].viewed ? 700 : 0),
-                        vsync: this,
-                      );
-                      var widget = ChatWidget(
-                        animationController: animationController,
-                        model: _chats[index],
-                        isSelected: _selectedChat == index,
-                        letter: chatName(_chats[index].id)[0],
-                      );
-                      animationController.forward();
-                      return GestureDetector(
-                        child: widget,
-                        onTap: () {
-                          if (_selectedChat != index) {
-                            setState(() {
-                              _selectedChat = index;
-                            });
-                          }
-                        },
-                      );
-                    },
-                    itemCount: _chats.length),
-              ),
-              if (_newChatNameInProgress)
-                TextFormField(
-                  maxLength: 50,
-                  decoration: const InputDecoration(
-                    icon: Icon(Icons.chat),
-                    labelText: 'New chat name *',
-                    hintText: 'How to display new chat in list',
-                    // enabledBorder: UnderlineInputBorder(
-                    //   borderSide: BorderSide(color: Color(0xFF6200EE)),
-                    // ),
-                  ),
-                  onFieldSubmitted: onCreateChat,
-                ),
-              BottomAppBar(
-                  color: Colors.blue,
-                  child: IconTheme(
-                    data: IconThemeData(
-                        color: Theme.of(context).colorScheme.onPrimary),
-                    child: Row(
-                      children: <Widget>[
-                        IconButton(
-                          icon: const Icon(Icons.menu),
-                          onPressed: onNavigationMenu,
-                          tooltip: 'Open navigation menu',
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.search),
-                          onPressed: onSearchInChats,
-                          tooltip: 'Search through all chats',
-                        ),
-                        IconButton(
-                            icon: _onlyFavorites
-                                ? const Icon(Icons.favorite)
-                                : const Icon(Icons.favorite_border),
-                            onPressed: onToggleFavourites,
-                            tooltip: 'Display only favourites'),
-                        Spacer(flex: 10),
-                        IconButton(
-                          icon: const Icon(Icons.add),
-                          onPressed: () {
-                            setState(() {
-                              _newChatNameInProgress = true;
-                            });
-                          },
-                          tooltip: 'Create new chat',
-                        ),
-                        Spacer(
-                          flex: 1,
-                        )
-                      ],
-                    ),
-                  )),
-            ]),
-          ),
-          // ------------------
-          VerticalDivider(width: 1.0),
-          // posts + composer
-          Expanded(
-              flex: 2,
-              child: Column(children: [
-                // posts
-                Flexible(
-                  child: ListView.builder(
-                      padding: EdgeInsets.all(8.0),
-                      reverse: true,
-                      itemBuilder: (_, int index) =>
-                          _buildPostWidget(filteredPosts.elementAt(index)),
-                      itemCount: filteredCount),
-                ),
-                // --------------------
-                Divider(height: 1.0),
-                // post composer
-                Container(
-                  decoration: BoxDecoration(color: Theme.of(context).cardColor),
-                  child: PostComposerWidget(
-                    enabled: _selectedChat != NOT_SELECTED,
-                    onSubmit: onSubmitPost,
-                  ),
-                ),
-              ])),
-        ],
+  Widget _buildPostWidget(PostModel model) {
+    // new message
+    PostViewModel widget;
+    var animationController = AnimationController(
+      duration: Duration(milliseconds: !model.viewed ? 700 : 0),
+      vsync: this,
+    );
+    switch (model.runtimeType) {
+      case OutgoingPostModel:
+        // add new outgoing message
+        widget = OutgoingPostWidget(
+          model: model as OutgoingPostModel,
+          animationController: animationController,
+          userName: registeredUser.shortName,
+        );
+        break;
+      default:
+        // add new incoming message
+        widget = IncomingPostWidget(
+          model: model,
+          animationController: animationController,
+          resolveUserName: userShortName,
+        );
+        break;
+    }
+    widget.animationController.forward();
+    return widget;
+  }
+
+  Widget _buildChatsDrawer(Iterable<ChatModel> chats, Selection sel) {
+    return Drawer(
+      child: SafeArea(
+        child: ListView.builder(
+            padding: EdgeInsets.all(8.0),
+            reverse: true,
+            itemBuilder: (_, int index) {
+              var item = chats.elementAt(index);
+              var animationController = AnimationController(
+                duration: Duration(milliseconds: !item.viewed ? 700 : 0),
+                vsync: this,
+              );
+              var widget = ChatWidget(
+                animationController: animationController,
+                model: item,
+                isSelected: sel.chat == index,
+                letter: chatName(item.id)[0],
+              );
+              animationController.forward();
+              return GestureDetector(
+                child: widget,
+                onTap: () {
+                  if (sel.chat != index) {
+                    setState(() {
+                      sel.chat = index;
+                    });
+                  }
+                },
+              );
+            },
+            itemCount: chats.length),
       ),
     );
   }
 
+  AppBar _buildAppBar() {
+    return AppBar(
+      title: Text(
+          "${registeredUser.shortName} (${registeredUser.name}) ${!_registered ? '* not logged in yet' : 'online'}"),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: () {
+            setState(() {
+              _newChatNameInProgress = true;
+            });
+          },
+          tooltip: 'Create new chat',
+        ),
+        //Spacer(flex: 10),
+        IconButton(
+          icon: const Icon(Icons.search),
+          onPressed: onSearchInChats,
+          tooltip: 'Search through all chats',
+        ),
+        IconButton(
+            icon: _onlyFavorites
+                ? const Icon(Icons.favorite)
+                : const Icon(Icons.favorite_border),
+            onPressed: onToggleFavourites,
+            tooltip: 'Display only favourites'),
+        IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: () {
+            setState(() {
+              _newChatNameInProgress = true;
+            });
+          },
+          tooltip: 'Create new chat',
+        ),
+        //Spacer(flex: 1)
+      ],
+    );
+  }
+
+  Widget _buildBodyWidget(bool enableComposer, Iterable<PostModel> posts) {
+    return Column(children: [
+      // posts
+      Flexible(
+        child: ListView.builder(
+            padding: EdgeInsets.all(8.0),
+            reverse: true,
+            itemBuilder: (_, int index) =>
+                _buildPostWidget(posts.elementAt(index)),
+            itemCount: posts.length),
+      ),
+      // --------------------
+      Divider(height: 1.0),
+      // post composer
+      Container(
+        decoration: BoxDecoration(color: Theme.of(context).cardColor),
+        child: PostComposerWidget(
+          enabled: enableComposer,
+          onSubmit: onSubmitPost,
+        ),
+      ),
+    ]);
+  }
+
+  Widget _buildNewChatWidget() {
+    return TextFormField(
+      maxLength: 50,
+      decoration: const InputDecoration(
+        icon: Icon(Icons.chat),
+        labelText: 'New chat name *',
+        hintText: 'How to display new chat in list',
+        // enabledBorder: UnderlineInputBorder(
+        //   borderSide: BorderSide(color: Color(0xFF6200EE)),
+        // ),
+      ),
+      onFieldSubmitted: onCreateChat,
+    );
+  }
+
+  // Widget _old_build(BuildContext context) {
+  //   debugPrint("displaying ${_chats.length} chats");
+  //   var selChatId =
+  //       _current.chat == NOT_SELECTED ? NO_CHAT_ID : _chats[_current.chat].id;
+  //   var filteredPosts = _posts.where((_p) => _p.chatId == selChatId);
+  //   var filteredCount = filteredPosts.length;
+  //   debugPrint("displaying $filteredCount posts");
+  //   return Scaffold(
+  //     appBar: AppBar(
+  //         title: Text(
+  //             "MiGChat - ${registeredUser.shortName} (${registeredUser.name}) ${!_registered ? '* not logged in yet' : 'online'}")),
+  //     body: Row(
+  //       children: <Widget>[
+  //         // users + chats
+  //         Flexible(
+  //           child: Column(children: [
+  //             // chats
+  //             Flexible(
+  //               child: ListView.builder(
+  //                   padding: EdgeInsets.all(8.0),
+  //                   reverse: true,
+  //                   itemBuilder: (_, int index) {
+  //                     var animationController = AnimationController(
+  //                       duration: Duration(
+  //                           milliseconds: !_chats[index].viewed ? 700 : 0),
+  //                       vsync: this,
+  //                     );
+  //                     var widget = ChatWidget(
+  //                       animationController: animationController,
+  //                       model: _chats[index],
+  //                       isSelected: _selectedChat == index,
+  //                       letter: chatName(_chats[index].id)[0],
+  //                     );
+  //                     animationController.forward();
+  //                     return GestureDetector(
+  //                       child: widget,
+  //                       onTap: () {
+  //                         if (_selectedChat != index) {
+  //                           setState(() {
+  //                             _selectedChat = index;
+  //                           });
+  //                         }
+  //                       },
+  //                     );
+  //                   },
+  //                   itemCount: _chats.length),
+  //             ),
+  //             if (_newChatNameInProgress)
+  //               TextFormField(
+  //                 maxLength: 50,
+  //                 decoration: const InputDecoration(
+  //                   icon: Icon(Icons.chat),
+  //                   labelText: 'New chat name *',
+  //                   hintText: 'How to display new chat in list',
+  //                   // enabledBorder: UnderlineInputBorder(
+  //                   //   borderSide: BorderSide(color: Color(0xFF6200EE)),
+  //                   // ),
+  //                 ),
+  //                 onFieldSubmitted: onCreateChat,
+  //               ),
+  //             BottomAppBar(
+  //                 color: Colors.blue,
+  //                 child: IconTheme(
+  //                   data: IconThemeData(
+  //                       color: Theme.of(context).colorScheme.onPrimary),
+  //                   child: Row(
+  //                     children: <Widget>[
+  //                       IconButton(
+  //                         icon: const Icon(Icons.menu),
+  //                         onPressed: onNavigationMenu,
+  //                         tooltip: 'Open navigation menu',
+  //                       ),
+  //                       IconButton(
+  //                         icon: const Icon(Icons.search),
+  //                         onPressed: onSearchInChats,
+  //                         tooltip: 'Search through all chats',
+  //                       ),
+  //                       IconButton(
+  //                           icon: _onlyFavorites
+  //                               ? const Icon(Icons.favorite)
+  //                               : const Icon(Icons.favorite_border),
+  //                           onPressed: onToggleFavourites,
+  //                           tooltip: 'Display only favourites'),
+  //                       Spacer(flex: 10),
+  //                       IconButton(
+  //                         icon: const Icon(Icons.add),
+  //                         onPressed: () {
+  //                           setState(() {
+  //                             _newChatNameInProgress = true;
+  //                           });
+  //                         },
+  //                         tooltip: 'Create new chat',
+  //                       ),
+  //                       Spacer(
+  //                         flex: 1,
+  //                       )
+  //                     ],
+  //                   ),
+  //                 )),
+  //           ]),
+  //         ),
+  //         // ------------------
+  //         VerticalDivider(width: 1.0),
+  //         // posts + composer
+  //         Expanded(
+  //             flex: 2,
+  //             child: Column(children: [
+  //               // posts
+  //               Flexible(
+  //                 child: ListView.builder(
+  //                     padding: EdgeInsets.all(8.0),
+  //                     reverse: true,
+  //                     itemBuilder: (_, int index) =>
+  //                         _buildPostWidget(filteredPosts.elementAt(index)),
+  //                     itemCount: filteredCount),
+  //               ),
+  //               // --------------------
+  //               Divider(height: 1.0),
+  //               // post composer
+  //               Container(
+  //                 decoration: BoxDecoration(color: Theme.of(context).cardColor),
+  //                 child: PostComposerWidget(
+  //                   enabled: _selectedChat != NOT_SELECTED,
+  //                   onSubmit: onSubmitPost,
+  //                 ),
+  //               ),
+  //             ])),
+  //       ],
+  //     ),
+  //   );
+  // }
+
   /// 'new outgoing message created' event
   void onSubmitPost(String text) {
-    assert(_selectedChat != NOT_SELECTED);
+    assert(_current.chatSelected);
 
     // create new message from input text
     var post = OutgoingPostModel(
         text: text,
         userId: registeredUser.id,
-        chatId: _chats[_selectedChat].id,
+        chatId: _chats[_current.chat].id,
         status: PostStatus.UNKNOWN);
 
     debugPrint("new outgoing post ${post.text.trim()} -> display stream");
@@ -241,10 +430,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     _service.sendPost(post);
 
     setState(() {});
-  }
-
-  void onNavigationMenu() {
-    debugPrint('Navigation menu is not implemented yet');
   }
 
   void onSearchInChats() {
@@ -411,21 +596,21 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     } else {
       // post with actual ID
       // test if duplicated
-      var i = _posts.indexWhere((_p) => _p.id == post.id);
-      if (i == NOT_FOUND) {
+      if (_posts.indexWhere((_p) => _p.id == post.id) == NOT_FOUND) {
         // test if there is our recent post
-        i = _posts.indexWhere((_p) =>
+        var iNoIdYet = _posts.indexWhere((_p) =>
             _p.id == NO_POST_ID &&
             _p.userId == registeredUser.id &&
             _p.chatId == post.chatId &&
             _p.text == post.text);
-        if (i != NOT_FOUND) {
+        if (iNoIdYet != NOT_FOUND) {
           // found own recent post, update only id & status
           setState(() {
-            _posts[i].id = post.id;
+            var upd = _posts[iNoIdYet];
+            upd.id = upd.id;
             // must be outgoing post, update status
-            assert(_posts[i] is OutgoingPostModel);
-            var asOutgoing = _posts[i] as OutgoingPostModel;
+            assert(upd is OutgoingPostModel);
+            var asOutgoing = upd as OutgoingPostModel;
             asOutgoing.status = PostStatus.SENT;
           });
           debugPrint('recent outgoing post has been updated');
@@ -450,35 +635,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         debugPrint('ignoring duplicated post');
       }
     }
-  }
-
-  PostViewModel _buildPostWidget(PostModel model) {
-    // new message
-    PostViewModel widget;
-    var animationController = AnimationController(
-      duration: Duration(milliseconds: !model.viewed ? 700 : 0),
-      vsync: this,
-    );
-    switch (model.runtimeType) {
-      case OutgoingPostModel:
-        // add new outgoing message
-        widget = OutgoingPostWidget(
-          model: model as OutgoingPostModel,
-          animationController: animationController,
-          userName: registeredUser.shortName,
-        );
-        break;
-      default:
-        // add new incoming message
-        widget = IncomingPostWidget(
-          model: model,
-          animationController: animationController,
-          resolveUserName: userShortName,
-        );
-        break;
-    }
-    widget.animationController.forward();
-    return widget;
   }
 
   void _addChats(List<Chat> chats) {
