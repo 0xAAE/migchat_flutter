@@ -1,7 +1,6 @@
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:grpc/grpc.dart';
-import 'package:migchat_flutter/user_model.dart';
 
 import 'proto/generated/migchat.pbgrpc.dart' as grpc;
 import 'post_model.dart';
@@ -33,12 +32,14 @@ class ChatService {
   /// gRPC client channel to receive chats from the server
   ClientChannel? _chatsRecv;
 
-  // send methods
+  // calls handlers
 
   final void Function(OutgoingPostModel model) onSendPostOk;
   final void Function(OutgoingPostModel model, String error) onSendPostError;
+  final void Function(grpc.Chat chat) onCreateChatOk;
+  final void Function(String name, String error) onCreateChatError;
 
-  // receive streams methods
+  // incoming streams handlers
 
   final void Function(int userId, DateTime created) onRegistered;
   final void Function(grpc.Invitation invitation) onInvitation;
@@ -54,6 +55,8 @@ class ChatService {
       {required this.onRegistered,
       required this.onSendPostOk,
       required this.onSendPostError,
+      required this.onCreateChatOk,
+      required this.onCreateChatError,
       required this.onUsersUpdated,
       required this.onInvitation,
       required this.onChatsUpdated,
@@ -404,10 +407,12 @@ class ChatService {
       );
       grpc.ChatRoomServiceClient(_getSender())
           .createChat(request)
+          .then((chat) => onCreateChatOk(chat))
           .catchError((e) {
         if (!_isShutdown) {
           if (e is GrpcError) {
-            debugPrint("failed create chat, ${e.message}");
+            debugPrint("failed to create chat, ${e.message}");
+            onCreateChatError(name, e.message ?? "failed to create chat");
           } else {
             Future.delayed(Duration(seconds: 30), () {
               if (!_isShutdown) {
