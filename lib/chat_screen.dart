@@ -112,11 +112,14 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           appBar: _buildAppBar(),
           body: Row(
             children: [
-              Column(
-                children: [
-                  Expanded(child: _buildChatsDrawer(_chats, _current)),
-                ],
-              ),
+              Container(
+                  width: 304, // drawer max width, got from experiment
+                  child: Column(
+                    children: [
+                      if (_newChatNameInProgress) _buildNewChatWidget(),
+                      Expanded(child: _buildChatsDrawer(_chats, _current)),
+                    ],
+                  )),
               const VerticalDivider(width: 1),
               Expanded(
                   child:
