@@ -34,13 +34,8 @@ const int NOT_SELECTED = -1;
 const int NOT_FOUND = -1;
 
 class Selection {
-  int _selectedChat = NOT_SELECTED;
-
-  int get chat => _selectedChat;
-
-  set chat(int i) => _selectedChat = i;
-
-  bool get chatSelected => _selectedChat != NOT_SELECTED;
+  int chat = NOT_SELECTED;
+  bool get chatSelected => chat != NOT_SELECTED;
 }
 
 /// State for ChatScreen widget
@@ -82,6 +77,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         },
         onSendPostOk: onSendPostOk,
         onSendPostError: onSendPostError,
+        onCreateChatOk: onCreateChatOk,
+        onCreateChatError: OnCreateChatError,
         onUsersUpdated: onUsersUpdated,
         onInvitation: onInvitation,
         onChatsUpdated: onChatsUpdated,
@@ -112,17 +109,30 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           appBar: _buildAppBar(),
           body: Row(
             children: [
-              _buildChatsDrawer(_chats, _current),
+              Container(
+                  // drawer max width is 304, got from experiment
+                  width: 304, //double.infinity,
+                  child: Column(
+                    children: [
+                      if (_newChatNameInProgress)
+                        Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: _buildNewChatWidget()),
+                      Expanded(child: _buildChatsDrawer(_chats, _current)),
+                    ],
+                  )),
               const VerticalDivider(width: 1),
               Expanded(
-                  child:
-                      _buildBodyWidget(_current.chatSelected, filteredPosts)),
+                  child: _buildBodyWidget(
+                      context, _current.chatSelected, filteredPosts)),
             ],
           ));
     } else {
       return Scaffold(
         appBar: _buildAppBar(),
-        body: _buildBodyWidget(_current.chatSelected, filteredPosts),
+        body: _buildBodyWidget(context, _current.chatSelected, filteredPosts,
+            chatTitle: _current.chatSelected,
+            newChatName: _newChatNameInProgress),
         drawer: _buildChatsDrawer(_chats, _current),
         // floatingActionButton: FloatingActionButton(
         //   heroTag: 'Add',
@@ -241,8 +251,32 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildBodyWidget(bool enableComposer, Iterable<PostModel> posts) {
+  Widget _buildBodyWidget(
+    BuildContext context,
+    bool enableComposer,
+    Iterable<PostModel> posts, {
+    bool chatTitle = false,
+    bool newChatName = false,
+  }) {
     return Column(children: [
+      // new chat name
+      if (newChatName)
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: _buildNewChatWidget(),
+        ),
+      // chat title
+      // todo: pass current chat via args
+      if (!newChatName && chatTitle && _current.chatSelected)
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 8.0),
+          width: double.infinity,
+          child: Text(
+            chatName(_chats[_current.chat].id),
+            style: Theme.of(context).textTheme.headline4,
+            textAlign: TextAlign.left,
+          ),
+        ),
       // posts
       Flexible(
         child: ListView.builder(
@@ -268,8 +302,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   Widget _buildNewChatWidget() {
     return TextFormField(
       maxLength: 50,
+      maxLines: 1,
       decoration: const InputDecoration(
         icon: Icon(Icons.chat),
+        helperText: "Submit empty name to cancel",
         labelText: 'New chat name *',
         hintText: 'How to display new chat in list',
         // enabledBorder: UnderlineInputBorder(
@@ -279,138 +315,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       onFieldSubmitted: onCreateChat,
     );
   }
-
-  // Widget _old_build(BuildContext context) {
-  //   debugPrint("displaying ${_chats.length} chats");
-  //   var selChatId =
-  //       _current.chat == NOT_SELECTED ? NO_CHAT_ID : _chats[_current.chat].id;
-  //   var filteredPosts = _posts.where((_p) => _p.chatId == selChatId);
-  //   var filteredCount = filteredPosts.length;
-  //   debugPrint("displaying $filteredCount posts");
-  //   return Scaffold(
-  //     appBar: AppBar(
-  //         title: Text(
-  //             "MiGChat - ${registeredUser.shortName} (${registeredUser.name}) ${!_registered ? '* not logged in yet' : 'online'}")),
-  //     body: Row(
-  //       children: <Widget>[
-  //         // users + chats
-  //         Flexible(
-  //           child: Column(children: [
-  //             // chats
-  //             Flexible(
-  //               child: ListView.builder(
-  //                   padding: EdgeInsets.all(8.0),
-  //                   reverse: true,
-  //                   itemBuilder: (_, int index) {
-  //                     var animationController = AnimationController(
-  //                       duration: Duration(
-  //                           milliseconds: !_chats[index].viewed ? 700 : 0),
-  //                       vsync: this,
-  //                     );
-  //                     var widget = ChatWidget(
-  //                       animationController: animationController,
-  //                       model: _chats[index],
-  //                       isSelected: _selectedChat == index,
-  //                       letter: chatName(_chats[index].id)[0],
-  //                     );
-  //                     animationController.forward();
-  //                     return GestureDetector(
-  //                       child: widget,
-  //                       onTap: () {
-  //                         if (_selectedChat != index) {
-  //                           setState(() {
-  //                             _selectedChat = index;
-  //                           });
-  //                         }
-  //                       },
-  //                     );
-  //                   },
-  //                   itemCount: _chats.length),
-  //             ),
-  //             if (_newChatNameInProgress)
-  //               TextFormField(
-  //                 maxLength: 50,
-  //                 decoration: const InputDecoration(
-  //                   icon: Icon(Icons.chat),
-  //                   labelText: 'New chat name *',
-  //                   hintText: 'How to display new chat in list',
-  //                   // enabledBorder: UnderlineInputBorder(
-  //                   //   borderSide: BorderSide(color: Color(0xFF6200EE)),
-  //                   // ),
-  //                 ),
-  //                 onFieldSubmitted: onCreateChat,
-  //               ),
-  //             BottomAppBar(
-  //                 color: Colors.blue,
-  //                 child: IconTheme(
-  //                   data: IconThemeData(
-  //                       color: Theme.of(context).colorScheme.onPrimary),
-  //                   child: Row(
-  //                     children: <Widget>[
-  //                       IconButton(
-  //                         icon: const Icon(Icons.menu),
-  //                         onPressed: onNavigationMenu,
-  //                         tooltip: 'Open navigation menu',
-  //                       ),
-  //                       IconButton(
-  //                         icon: const Icon(Icons.search),
-  //                         onPressed: onSearchInChats,
-  //                         tooltip: 'Search through all chats',
-  //                       ),
-  //                       IconButton(
-  //                           icon: _onlyFavorites
-  //                               ? const Icon(Icons.favorite)
-  //                               : const Icon(Icons.favorite_border),
-  //                           onPressed: onToggleFavourites,
-  //                           tooltip: 'Display only favourites'),
-  //                       Spacer(flex: 10),
-  //                       IconButton(
-  //                         icon: const Icon(Icons.add),
-  //                         onPressed: () {
-  //                           setState(() {
-  //                             _newChatNameInProgress = true;
-  //                           });
-  //                         },
-  //                         tooltip: 'Create new chat',
-  //                       ),
-  //                       Spacer(
-  //                         flex: 1,
-  //                       )
-  //                     ],
-  //                   ),
-  //                 )),
-  //           ]),
-  //         ),
-  //         // ------------------
-  //         VerticalDivider(width: 1.0),
-  //         // posts + composer
-  //         Expanded(
-  //             flex: 2,
-  //             child: Column(children: [
-  //               // posts
-  //               Flexible(
-  //                 child: ListView.builder(
-  //                     padding: EdgeInsets.all(8.0),
-  //                     reverse: true,
-  //                     itemBuilder: (_, int index) =>
-  //                         _buildPostWidget(filteredPosts.elementAt(index)),
-  //                     itemCount: filteredCount),
-  //               ),
-  //               // --------------------
-  //               Divider(height: 1.0),
-  //               // post composer
-  //               Container(
-  //                 decoration: BoxDecoration(color: Theme.of(context).cardColor),
-  //                 child: PostComposerWidget(
-  //                   enabled: _selectedChat != NOT_SELECTED,
-  //                   onSubmit: onSubmitPost,
-  //                 ),
-  //               ),
-  //             ])),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   /// 'new outgoing message created' event
   void onSubmitPost(String text) {
@@ -447,8 +351,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     setState(() {
       _newChatNameInProgress = false;
     });
-    debugPrint('Creating new chat ${name.trim()}');
-    _service.createChat(name);
+    if (name.length > 0) {
+      debugPrint('Creating new chat ${name.trim()}');
+      _service.createChat(name);
+    }
   }
 
   String userShortName(int userId) {
@@ -503,6 +409,17 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void onSendPostError(PostModel message, String error) {
     debugPrint(
         "FAILED to send message \"${message.text.trim()}\" to the server: $error");
+  }
+
+  void onCreateChatOk(Chat chat) {
+    _addChats(<Chat>[chat]);
+    var createdId = chat.id.toInt();
+    _current.chat = _chats.indexWhere((c) => c.id == createdId);
+    setState(() {});
+  }
+
+  void OnCreateChatError(String name, String error) {
+    debugPrint("FAILED to create chat: $error");
   }
 
   void onUsersUpdated(UpdateUsers update) {
