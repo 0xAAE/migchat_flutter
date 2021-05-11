@@ -118,7 +118,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         Container(
                             margin: const EdgeInsets.symmetric(horizontal: 8.0),
                             child: _buildNewChatWidget()),
-                      Expanded(child: _buildChatsDrawer(_chats, _current)),
+                      Expanded(
+                          child: _buildChatsDrawer(context, _chats, _current)),
                     ],
                   )),
               const VerticalDivider(width: 1),
@@ -133,7 +134,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         body: _buildBodyWidget(context, _current.chatSelected, filteredPosts,
             chatTitle: _current.chatSelected,
             newChatName: _newChatNameInProgress),
-        drawer: _buildChatsDrawer(_chats, _current),
+        drawer: _buildChatsDrawer(context, _chats, _current, autoHide: true),
         // floatingActionButton: FloatingActionButton(
         //   heroTag: 'Add',
         //   onPressed: () {},
@@ -176,7 +177,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     return widget;
   }
 
-  Widget _buildChatsDrawer(Iterable<ChatModel> chats, Selection sel) {
+  Widget _buildChatsDrawer(
+      BuildContext context, Iterable<ChatModel> chats, Selection sel,
+      {bool autoHide = false}) {
     return Drawer(
       child: SafeArea(
         child: ListView.builder(
@@ -202,6 +205,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     setState(() {
                       sel.chat = index;
                     });
+                    if (autoHide) {
+                      Navigator.pop(context);
+                    }
                   }
                 },
               );
