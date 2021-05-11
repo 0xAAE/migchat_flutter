@@ -6,7 +6,7 @@ import 'proto/generated/migchat.pbgrpc.dart' as grpc;
 import 'post_model.dart';
 
 /// CHANGE TO IP ADDRESS OF YOUR SERVER IF IT IS NECESSARY
-const serverIP = "gemini";
+const serverIP = "milkiway.asuscomm.com";
 const serverPort = 15150;
 
 /// ChatService client implementation
