@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -86,6 +87,16 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     _initUser();
   }
 
+  void _reset() {
+    _service.shutdown();
+    setState(() {
+      _current.chat = NOT_SELECTED;
+      _chats.clear();
+      _users.clear();
+      _posts.clear();
+    });
+  }
+
   _requestUserInfo() async {
     var info = await Navigator.push(
         context,
@@ -115,16 +126,18 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   _changeUser() async {
-    _service.shutdown();
-    setState(() {
-      _current.chat = NOT_SELECTED;
-      _chats.clear();
-      _users.clear();
-      _posts.clear();
-    });
+    var storedName = _currentUser.name;
+    var storedShortName = _currentUser.shortName;
     await _requestUserInfo();
-    _service.register(
-        shortName: _currentUser.shortName, name: _currentUser.name);
+    if (storedName != _currentUser.name ||
+        storedShortName != _currentUser.shortName) {
+      debugPrint("User has changed, re-registering on server");
+      _reset();
+      _service.register(
+          shortName: _currentUser.shortName, name: _currentUser.name);
+    } else {
+      debugPrint("User has not changed, continue with current registration");
+    }
   }
 
   _saveUser(String name, String shortName) async {
