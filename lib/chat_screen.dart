@@ -83,10 +83,22 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         onPost: onPost,
         onRecvError: onRecvError);
     // try load last settings
-    _registerUser();
+    _initUser();
   }
 
-  _registerUser() async {
+  _requestUserInfo() async {
+    var info = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CurrentUserInfo(_currentUser),
+        ));
+    if (info != null) {
+      _currentUser.name = info.name;
+      _currentUser.shortName = info.shortName;
+    }
+  }
+
+  _initUser() async {
     SharedPreferences settings = await SharedPreferences.getInstance();
     var name = settings.getString("name") ?? '';
     var shortName = settings.getString("shortName") ?? '';
@@ -96,14 +108,21 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         _currentUser.shortName = shortName;
       });
     } else {
-      var info = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CurrentUserInfo(_currentUser),
-          ));
-      _currentUser.name = info.name;
-      _currentUser.shortName = info.shortName;
+      await _requestUserInfo();
     }
+    _service.register(
+        shortName: _currentUser.shortName, name: _currentUser.name);
+  }
+
+  _changeUser() async {
+    _service.shutdown();
+    setState(() {
+      _current.chat = NOT_SELECTED;
+      _chats.clear();
+      _users.clear();
+      _posts.clear();
+    });
+    await _requestUserInfo();
     _service.register(
         shortName: _currentUser.shortName, name: _currentUser.name);
   }
@@ -263,7 +282,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           },
           tooltip: 'Create new chat',
         ),
-        //Spacer(flex: 10),
         IconButton(
           icon: const Icon(Icons.search),
           onPressed: onSearchInChats,
@@ -276,15 +294,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             onPressed: onToggleFavourites,
             tooltip: 'Display only favourites'),
         IconButton(
-          icon: const Icon(Icons.add),
-          onPressed: () {
-            setState(() {
-              _newChatNameInProgress = true;
-            });
-          },
-          tooltip: 'Create new chat',
-        ),
-        //Spacer(flex: 1)
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              _changeUser();
+            }),
       ],
     );
   }

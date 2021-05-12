@@ -163,6 +163,8 @@ class ChatService {
     _shutdownChats();
     _shutdownUsers();
     _shutdownInvitations();
+    _userId = null;
+    _isShutdown = false;
   }
 
   void _restart(int secs, void Function() func) {

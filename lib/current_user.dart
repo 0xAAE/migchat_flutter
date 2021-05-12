@@ -71,14 +71,13 @@ class _CurrentUserInfoState extends State<CurrentUserInfo> {
                     textCapitalization: TextCapitalization.words,
                     decoration: InputDecoration(
                       filled: true,
-                      icon: const Icon(Icons.login),
+                      icon: const Icon(Icons.account_circle),
                       hintText: "login",
                       labelText: "Short name",
                     ),
                     initialValue: user.shortName,
                     onChanged: (value) => user.shortName = value,
                     onSaved: (value) {
-                      //user.shortName = value ?? '';
                       _fieldShortName.requestFocus();
                     },
                   ),
@@ -87,8 +86,8 @@ class _CurrentUserInfoState extends State<CurrentUserInfo> {
                       textCapitalization: TextCapitalization.words,
                       decoration: InputDecoration(
                           filled: true,
-                          icon: const Icon(Icons.person),
-                          hintText: "actual",
+                          icon: const Icon(Icons.account_box),
+                          hintText: "actual full name",
                           labelText: "Name"),
                       initialValue: user.name,
                       onChanged: (value) => user.name = value,
