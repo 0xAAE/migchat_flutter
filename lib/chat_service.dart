@@ -61,11 +61,7 @@ class ChatService {
       required this.onInvitation,
       required this.onChatsUpdated,
       required this.onPost,
-      required this.onRecvError,
-      required String shortName,
-      required String name}) {
-    _register(shortName: shortName, name: name);
-  }
+      required this.onRecvError});
 
   ClientChannel _getSender() {
     if (_clientSend == null) {
@@ -213,7 +209,7 @@ class ChatService {
     }
   }
 
-  void _register({required String shortName, required String name}) {
+  void register({required String shortName, required String name}) {
     if (_userId != null || _isShutdown) {
       return;
     }
@@ -232,7 +228,7 @@ class ChatService {
         // retry registering later
         Future.delayed(Duration(seconds: 10), () {
           if (!_isShutdown) {
-            _register(shortName: shortName, name: name);
+            register(shortName: shortName, name: name);
           }
         });
       }
