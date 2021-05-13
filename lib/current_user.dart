@@ -50,7 +50,7 @@ class _CurrentUserInfoState extends State<CurrentUserInfo> {
     const sizedBox = SizedBox(height: 24);
     return Scaffold(
       appBar: AppBar(
-        title: Text("User info"),
+        title: Text('User info'),
       ),
       body: Center(
           child: Padding(
@@ -60,7 +60,7 @@ class _CurrentUserInfoState extends State<CurrentUserInfo> {
                   sizedBox,
                   Container(
                     child: Text(
-                      "Enter your user information to register on server. Then press button 'Register' to submit the info",
+                      'Enter your user information to register on server. Then press button "Register" to submit the info',
                       textAlign: TextAlign.left,
                     ),
                     width: double.infinity,
@@ -72,8 +72,8 @@ class _CurrentUserInfoState extends State<CurrentUserInfo> {
                     decoration: InputDecoration(
                       filled: true,
                       icon: const Icon(Icons.account_circle),
-                      hintText: "login",
-                      labelText: "Short name",
+                      hintText: 'login',
+                      labelText: 'Short name',
                     ),
                     initialValue: user.shortName,
                     onChanged: (value) => user.shortName = value,
@@ -87,8 +87,8 @@ class _CurrentUserInfoState extends State<CurrentUserInfo> {
                       decoration: InputDecoration(
                           filled: true,
                           icon: const Icon(Icons.account_box),
-                          hintText: "actual full name",
-                          labelText: "Name"),
+                          hintText: 'actual full name',
+                          labelText: 'Name'),
                       initialValue: user.name,
                       onChanged: (value) => user.name = value,
                       onSaved: (value) {

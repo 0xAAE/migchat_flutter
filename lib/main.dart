@@ -11,7 +11,7 @@ class MiGChatApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "MiGChat",
+      title: 'MiGChat',
       home: ChatScreen(),
     );
   }

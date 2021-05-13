@@ -62,11 +62,11 @@ class OutgoingPostState extends State<OutgoingPostWidget> {
   /// Constructor
   OutgoingPostState(
       {required this.controller, required this.animationController}) {
-    // Subscribe to event "message status has been changed"
+    // Subscribe to event 'message status has been changed'
     controller.onStatusChanged = onStatusChanged;
   }
 
-  /// Subscription to event "message status has been changed"
+  /// Subscription to event 'message status has been changed'
   void onStatusChanged(PostStatus oldStatus, PostStatus newStatus) {
     setState(() {});
   }
@@ -97,7 +97,7 @@ class OutgoingPostState extends State<OutgoingPostWidget> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text("$name (${controller.model.createdText})",
+                  Text('$name (${controller.model.createdText})',
                       style: Theme.of(context).textTheme.overline),
                   Container(
                     margin: EdgeInsets.only(top: 5.0),

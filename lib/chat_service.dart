@@ -6,7 +6,7 @@ import 'proto/generated/migchat.pbgrpc.dart' as grpc;
 import 'post_model.dart';
 
 /// CHANGE TO IP ADDRESS OF YOUR SERVER IF IT IS NECESSARY
-const serverIP = "milkiway.asuscomm.com";
+const serverIP = 'milkiway.asuscomm.com';
 const serverPort = 15150;
 
 /// ChatService client implementation
@@ -248,7 +248,7 @@ class ChatService {
         onUsersUpdated(update);
       }).then((_) {
         // raise exception to start listening again
-        throw Exception("users updates stream from the server has been closed");
+        throw Exception('users updates stream from the server has been closed');
       }).catchError((e) {
         if (!_isShutdown) {
           _shutdownUsers();
@@ -271,7 +271,7 @@ class ChatService {
         onInvitation(invitation);
       }).then((_) {
         // raise exception to start listening again
-        throw Exception("invitations stream from the server has been closed");
+        throw Exception('invitations stream from the server has been closed');
       }).catchError((e) {
         if (!_isShutdown) {
           _shutdownInvitations();
@@ -294,7 +294,7 @@ class ChatService {
         onChatsUpdated(update);
       }).then((_) {
         // raise exception to start listening again
-        throw Exception("chats updates stream from the server has been closed");
+        throw Exception('chats updates stream from the server has been closed');
       }).catchError((e) {
         if (!_isShutdown) {
           _shutdownChats();
@@ -318,7 +318,7 @@ class ChatService {
       }).then((_) {
         // raise exception to start listening again
         throw Exception(
-            "incoming posts stream from the server has been closed");
+            'incoming posts stream from the server has been closed');
       }).catchError((e) {
         if (!_isShutdown) {
           _shutdownPosts();
@@ -372,10 +372,10 @@ class ChatService {
           .catchError((e) {
         if (!_isShutdown) {
           if (e is GrpcError) {
-            if (e.codeName == "ALREADY_EXISTS") {
+            if (e.codeName == 'ALREADY_EXISTS') {
               debugPrint('already in the chat');
             } else {
-              debugPrint("failed enter chat, ${e.message}");
+              debugPrint('failed enter chat, ${e.message}');
             }
           } else {
             Future.delayed(Duration(seconds: 30), () {
@@ -409,8 +409,8 @@ class ChatService {
           .catchError((e) {
         if (!_isShutdown) {
           if (e is GrpcError) {
-            debugPrint("failed to create chat, ${e.message}");
-            onCreateChatError(name, e.message ?? "failed to create chat");
+            debugPrint('failed to create chat, ${e.message}');
+            onCreateChatError(name, e.message ?? 'failed to create chat');
           } else {
             Future.delayed(Duration(seconds: 30), () {
               if (!_isShutdown) {
@@ -442,7 +442,7 @@ class ChatService {
           .catchError((e) {
         if (!_isShutdown) {
           if (e is GrpcError) {
-            debugPrint("failed create chat, ${e.message}");
+            debugPrint('failed create chat, ${e.message}');
           } else {
             Future.delayed(Duration(seconds: 30), () {
               if (!_isShutdown) {
