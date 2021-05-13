@@ -273,10 +273,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text(registeredUser.shortName, style: shortStyle),
+                        Text(_currentUser.shortName, style: shortStyle),
                         Container(
                           margin: EdgeInsets.only(top: 5.0),
-                          child: Text(registeredUser.name, style: nameStyle),
+                          child: Text(_currentUser.name, style: nameStyle),
                         ),
                       ],
                     ));
