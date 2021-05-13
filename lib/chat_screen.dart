@@ -19,6 +19,8 @@ import 'layout/adaptive.dart';
 typedef String ResolveUserName(int userId);
 typedef String ResolveChatName(int chatId);
 
+const String NO_NAME = "?";
+
 /// Host screen widget - main window
 class ChatScreen extends StatefulWidget {
   ChatScreen() : super(key: new ObjectKey("Main window"));
@@ -77,7 +79,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         onSendPostOk: onSendPostOk,
         onSendPostError: onSendPostError,
         onCreateChatOk: onCreateChatOk,
-        onCreateChatError: OnCreateChatError,
+        onCreateChatError: onCreateChatError,
         onUsersUpdated: onUsersUpdated,
         onInvitation: onInvitation,
         onChatsUpdated: onChatsUpdated,
@@ -164,7 +166,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     final isDesktop = isDisplayDesktop(context);
     if (isDesktop) {
       return Scaffold(
-          appBar: _buildAppBar(),
+          appBar: _buildAppBar(compact: false),
           body: Row(
             children: [
               Container(
@@ -177,7 +179,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                             margin: const EdgeInsets.symmetric(horizontal: 8.0),
                             child: _buildNewChatWidget()),
                       Expanded(
-                          child: _buildChatsDrawer(context, _chats, _current)),
+                          child: _buildChatsDrawer(context, _chats, _current,
+                              autoHide: false, withHeader: false)),
                     ],
                   )),
               const VerticalDivider(width: 1),
@@ -188,11 +191,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           ));
     } else {
       return Scaffold(
-        appBar: _buildAppBar(),
+        appBar: _buildAppBar(compact: true),
         body: _buildBodyWidget(context, _current.chatSelected, filteredPosts,
             chatTitle: _current.chatSelected,
             newChatName: _newChatNameInProgress),
-        drawer: _buildChatsDrawer(context, _chats, _current, autoHide: true),
+        drawer: _buildChatsDrawer(context, _chats, _current,
+            autoHide: true, withHeader: true),
         // floatingActionButton: FloatingActionButton(
         //   heroTag: 'Add',
         //   onPressed: () {},
@@ -241,13 +245,42 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   Widget _buildChatsDrawer(
       BuildContext context, Iterable<ChatModel> chats, Selection sel,
-      {bool autoHide = false}) {
+      {required bool autoHide, required bool withHeader}) {
     return Drawer(
       child: SafeArea(
         child: ListView.builder(
             padding: EdgeInsets.all(8.0),
-            reverse: true,
-            itemBuilder: (_, int index) {
+            //reverse: true,
+            itemBuilder: (_, int idx) {
+              // effective index
+              int index = withHeader ? idx - 1 : idx;
+              if (index < 0) {
+                var defStyle =
+                    TextStyle(color: Theme.of(context).secondaryHeaderColor);
+                var nameStyle = Theme.of(context)
+                        .textTheme
+                        .bodyText1
+                        ?.apply(color: defStyle.color) ??
+                    defStyle;
+                var shortStyle = Theme.of(context)
+                        .textTheme
+                        .headline4
+                        ?.apply(color: defStyle.color) ??
+                    defStyle;
+                return DrawerHeader(
+                    decoration:
+                        BoxDecoration(color: Theme.of(context).primaryColor),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(_currentUser.shortName, style: shortStyle),
+                        Container(
+                          margin: EdgeInsets.only(top: 5.0),
+                          child: Text(_currentUser.name, style: nameStyle),
+                        ),
+                      ],
+                    ));
+              }
               var item = chats.elementAt(index);
               var animationController = AnimationController(
                 duration: Duration(milliseconds: !item.viewed ? 700 : 0),
@@ -274,17 +307,20 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 },
               );
             },
-            itemCount: chats.length),
+            // counting header
+            itemCount: chats.length + (withHeader ? 1 : 0)),
       ),
     );
   }
 
-  AppBar _buildAppBar() {
+  AppBar _buildAppBar({required bool compact}) {
     var name = _currentUser.name;
     var shortName = _currentUser.shortName;
+    String title = !compact
+        ? "$shortName ($name) ${!_registered ? '* not logged in yet' : 'online'}"
+        : "$shortName ${!_registered ? '* not logged in' : 'online'}";
     return AppBar(
-      title: Text(
-          "$shortName ($name) ${!_registered ? '* not logged in yet' : 'online'}"),
+      title: Text(title),
       actions: [
         IconButton(
           icon: const Icon(Icons.add),
@@ -293,24 +329,26 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               _newChatNameInProgress = true;
             });
           },
-          tooltip: 'Create new chat',
+          tooltip: "Create new chat",
         ),
         IconButton(
           icon: const Icon(Icons.search),
           onPressed: onSearchInChats,
-          tooltip: 'Search through all chats',
+          tooltip: "Search through all chats",
         ),
         IconButton(
             icon: _onlyFavorites
                 ? const Icon(Icons.favorite)
                 : const Icon(Icons.favorite_border),
             onPressed: onToggleFavourites,
-            tooltip: 'Display only favourites'),
+            tooltip: "Display only favourites"),
         IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              _changeUser();
-            }),
+          icon: const Icon(Icons.logout),
+          onPressed: () {
+            _changeUser();
+          },
+          tooltip: "Switch current user",
+        ),
       ],
     );
   }
@@ -452,12 +490,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       if (_chats[idxChat].description.length > 0) {
         return _chats[idxChat].description;
       } else {
-        var idxId =
+        var idxMember =
             _chats[idxChat].userIds.indexWhere((id) => id != _currentUser.id);
-        if (idxId == NOT_FOUND) {
-          return '?';
+        if (idxMember == NOT_FOUND) {
+          return NO_NAME;
         } else {
-          return userShortName(_chats[idxChat].userIds[idxId]);
+          return userShortName(_chats[idxChat].userIds[idxMember]);
         }
       }
     } else {
@@ -483,7 +521,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     setState(() {});
   }
 
-  void OnCreateChatError(String name, String error) {
+  void onCreateChatError(String name, String error) {
     debugPrint("FAILED to create chat: $error");
   }
 

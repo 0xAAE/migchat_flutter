@@ -19,8 +19,8 @@ class UserModel {
       required this.shortName,
       required this.created,
       this.id = 0,
-      this.online = false}) {
-    _ensureNames();
+      this.online = true}) {
+    _validate();
   }
 
   UserModel.from(User user)
@@ -30,7 +30,7 @@ class UserModel {
         created =
             DateTime.fromMillisecondsSinceEpoch(user.created.toInt() * 1000),
         online = true {
-    _ensureNames();
+    _validate();
   }
 
   String _formatCreated() {
@@ -40,7 +40,7 @@ class UserModel {
 
   String get createdText => _formatCreated();
 
-  void _ensureNames() {
+  void _validate() {
     if (name.length == 0) {
       name = id.toString();
     }
