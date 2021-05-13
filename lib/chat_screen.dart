@@ -329,24 +329,26 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               _newChatNameInProgress = true;
             });
           },
-          tooltip: 'Create new chat',
+          tooltip: "Create new chat",
         ),
         IconButton(
           icon: const Icon(Icons.search),
           onPressed: onSearchInChats,
-          tooltip: 'Search through all chats',
+          tooltip: "Search through all chats",
         ),
         IconButton(
             icon: _onlyFavorites
                 ? const Icon(Icons.favorite)
                 : const Icon(Icons.favorite_border),
             onPressed: onToggleFavourites,
-            tooltip: 'Display only favourites'),
+            tooltip: "Display only favourites"),
         IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              _changeUser();
-            }),
+          icon: const Icon(Icons.logout),
+          onPressed: () {
+            _changeUser();
+          },
+          tooltip: "Switch current user",
+        ),
       ],
     );
   }
