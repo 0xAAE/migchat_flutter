@@ -13,23 +13,23 @@ class CurrentUser {
   CurrentUser({required this.name, required this.shortName});
 }
 
-class CurrentUserInfo extends StatefulWidget {
+class CurrentUserScreen extends StatefulWidget {
   final UserModel user;
 
-  CurrentUserInfo(this.user);
+  CurrentUserScreen(this.user);
 
   @override
-  _CurrentUserInfoState createState() =>
-      _CurrentUserInfoState(CurrentUser.from(user));
+  _CurrentUserScreenState createState() =>
+      _CurrentUserScreenState(CurrentUser.from(user));
 }
 
-class _CurrentUserInfoState extends State<CurrentUserInfo> {
+class _CurrentUserScreenState extends State<CurrentUserScreen> {
   CurrentUser user;
 
   late FocusNode _fieldShortName;
   late FocusNode _button;
 
-  _CurrentUserInfoState(this.user);
+  _CurrentUserScreenState(this.user);
 
   @override
   void initState() {

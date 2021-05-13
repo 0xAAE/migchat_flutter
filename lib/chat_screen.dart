@@ -13,7 +13,7 @@ import 'post_widget_incoming.dart';
 import 'post_widget_outgoing.dart';
 import 'chat_service.dart';
 import 'user_model.dart';
-import 'current_user.dart';
+import 'current_user_screen.dart';
 import 'layout/adaptive.dart';
 
 typedef String ResolveUserName(int userId);
@@ -107,7 +107,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     var info = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => CurrentUserInfo(_currentUser),
+          builder: (context) => CurrentUserScreen(_currentUser),
         ));
     if (info != null) {
       _currentUser.name = info.name;
