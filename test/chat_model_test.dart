@@ -12,38 +12,35 @@ String resolveChatName(int id) {
 }
 
 void main() {
+  const int USER0_ID = 0;
+  const int USER1_ID = 555;
+  const int USER2_ID = -333;
+  const int ID = 777;
+  const String DESCRIPTION = 'chat description';
+  const int CREATED = 1234567;
+  const bool PERMANENT = true;
+  DateTime created = DateTime.fromMillisecondsSinceEpoch(CREATED * 1000);
+
   test('ChatModel.from(chat) has to be equal to its source', () {
     Chat chat = Chat(
-        id: Int64(1),
-        permanent: true,
-        description: 'chat description',
-        users: <Int64>[Int64(0), Int64(1), Int64(-1)],
-        created: Int64(1234567));
+        id: Int64(ID),
+        permanent: PERMANENT,
+        description: DESCRIPTION,
+        users: <Int64>[Int64(USER0_ID), Int64(USER1_ID), Int64(USER2_ID)],
+        created: Int64(CREATED));
     ChatModel model = ChatModel.from(chat, resolveUserName, resolveChatName);
 
-    expect(model.id, chat.id.toInt());
-
-    expect(model.permanent, chat.permanent);
-
-    expect(model.description, chat.description);
-
-    expect(model.userIds, <int>[
-      chat.users[0].toInt(),
-      chat.users[1].toInt(),
-      chat.users[2].toInt()
-    ]);
-
+    expect(model.id, ID);
+    expect(model.permanent, PERMANENT);
+    expect(model.description, DESCRIPTION);
+    expect(model.userIds, <int>[USER0_ID, USER1_ID, USER2_ID]);
     expect(model.invitations.length, 0);
-
-    expect(model.created,
-        DateTime.fromMillisecondsSinceEpoch(chat.created.toInt() * 1000));
-
+    expect(model.created, created);
     expect(model.viewed, false);
   });
 
   test('ChatModel must return !viewed only once', () {
     ChatModel model = ChatModel.from(Chat(), resolveUserName, resolveChatName);
-
     expect(model.viewed, false);
     expect(model.viewed, true);
     expect(model.viewed, true);
@@ -51,7 +48,6 @@ void main() {
 
   test('ChatModel is constructable from empty chat', () {
     ChatModel model = ChatModel.from(Chat(), resolveUserName, resolveChatName);
-
     expect(model.id, 0);
     expect(model.permanent, false);
     expect(model.description, '');

@@ -4,6 +4,12 @@ import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 import 'package:fixnum/fixnum.dart';
 
 void main() {
+  const int ID = 777;
+  const String NAME = 'some name';
+  const String SHORT = 'alias';
+  const int CREATED = 1234567;
+  DateTime created = DateTime.fromMillisecondsSinceEpoch(CREATED * 1000);
+
   test('UserModel() must not have empty name and shortName', () {
     UserModel model = UserModel(
         name: '',
@@ -22,16 +28,12 @@ void main() {
 
   test('UserModel.from(user) has to be equal to its source', () {
     User user = User(
-        id: Int64(1),
-        name: 'name',
-        shortName: 'short name',
-        created: Int64(1234567));
+        id: Int64(ID), name: NAME, shortName: SHORT, created: Int64(CREATED));
     UserModel model = UserModel.from(user);
-    expect(model.id, user.id.toInt());
-    expect(model.shortName, user.shortName);
-    expect(model.name, user.name);
-    expect(model.created,
-        DateTime.fromMillisecondsSinceEpoch(user.created.toInt() * 1000));
+    expect(model.id, ID);
+    expect(model.shortName, SHORT);
+    expect(model.name, NAME);
+    expect(model.created, created);
   });
 
   test('UserModel is constructable from empty User', () {
