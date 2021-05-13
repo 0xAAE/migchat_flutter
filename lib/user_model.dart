@@ -15,10 +15,10 @@ class UserModel {
   /// Class constructors
 
   UserModel(
-      {required this.id,
-      required this.name,
+      {required this.name,
       required this.shortName,
       required this.created,
+      this.id = 0,
       this.online = true}) {
     _validate();
   }
@@ -42,7 +42,7 @@ class UserModel {
 
   void _validate() {
     if (name.length == 0) {
-      name = NOT_SET;
+      name = id.toString();
     }
     if (shortName.length == 0) {
       shortName = NOT_SET;
