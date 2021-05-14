@@ -21,9 +21,9 @@ void main() {
   const String DESCRIPTION = 'chat description';
   const int CREATED = 1234567;
   const bool PERMANENT = true;
-  DateTime created = DateTime.fromMillisecondsSinceEpoch(CREATED * 1000);
+  //DateTime created = DateTime.fromMillisecondsSinceEpoch(CREATED * 1000);
 
-  testWidgets('Widget displays name, short name and 1-letter icon',
+  testWidgets('ChatWidget displays name, short name and letter',
       (WidgetTester tester) async {
     ChatModel model = ChatModel.from(
         Chat(
@@ -35,7 +35,7 @@ void main() {
         resolveUserName,
         resolveChatName);
     var animationController = AnimationController(
-      duration: Duration(milliseconds: !model.viewed ? 700 : 0),
+      duration: Duration(milliseconds: 0),
       vsync: tester,
     );
 
@@ -50,5 +50,13 @@ void main() {
     );
 
     await tester.pumpWidget(supportingWidget);
+
+    final letterFinder = find.text('X');
+    final nameFinder = find.text(model.name);
+    final membersFinder = find.text(model.members);
+
+    expect(letterFinder, findsOneWidget);
+    expect(nameFinder, findsOneWidget);
+    expect(membersFinder, findsOneWidget);
   });
 }
