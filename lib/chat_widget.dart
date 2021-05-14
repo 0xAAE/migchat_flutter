@@ -59,9 +59,9 @@ class ChatWidget extends StatelessWidget implements ChatViewModel {
                 Container(
                   child: IconButton(
                     icon: const Icon(Icons.info_outline),
-                    tooltip: "Chat was created on ${model.createdText}",
+                    tooltip: 'Chat was created on ${model.createdText}',
                     onPressed: () => {
-                      debugPrint("Chat was created on ${model.createdText}")
+                      debugPrint('Chat was created on ${model.createdText}')
                     },
                   ),
                 )

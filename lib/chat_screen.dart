@@ -13,17 +13,17 @@ import 'post_widget_incoming.dart';
 import 'post_widget_outgoing.dart';
 import 'chat_service.dart';
 import 'user_model.dart';
-import 'current_user.dart';
+import 'current_user_screen.dart';
 import 'layout/adaptive.dart';
 
 typedef String ResolveUserName(int userId);
 typedef String ResolveChatName(int chatId);
 
-const String NO_NAME = "?";
+const String NO_NAME = '?';
 
 /// Host screen widget - main window
 class ChatScreen extends StatefulWidget {
-  ChatScreen() : super(key: new ObjectKey("Main window"));
+  ChatScreen() : super(key: new ObjectKey('Main window'));
 
   @override
   State createState() => ChatScreenState();
@@ -35,6 +35,10 @@ const int NOT_FOUND = -1;
 class Selection {
   int chat = NOT_SELECTED;
   bool get chatSelected => chat != NOT_SELECTED;
+
+  void reset() {
+    chat = NOT_SELECTED;
+  }
 }
 
 /// State for ChatScreen widget
@@ -92,7 +96,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void _reset() {
     _service.shutdown();
     setState(() {
-      _current.chat = NOT_SELECTED;
+      _current.reset();
       _chats.clear();
       _users.clear();
       _posts.clear();
@@ -103,7 +107,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     var info = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => CurrentUserInfo(_currentUser),
+          builder: (context) => CurrentUserScreen(_currentUser),
         ));
     if (info != null) {
       _currentUser.name = info.name;
@@ -113,8 +117,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   _initUser() async {
     SharedPreferences settings = await SharedPreferences.getInstance();
-    var name = settings.getString("name") ?? '';
-    var shortName = settings.getString("shortName") ?? '';
+    var name = settings.getString('name') ?? '';
+    var shortName = settings.getString('shortName') ?? '';
     if (name.length > 0 && shortName.length > 0) {
       setState(() {
         _currentUser.name = name;
@@ -133,19 +137,19 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     await _requestUserInfo();
     if (storedName != _currentUser.name ||
         storedShortName != _currentUser.shortName) {
-      debugPrint("User has changed, re-registering on server");
+      debugPrint('User has changed, re-registering on server');
       _reset();
       _service.register(
           shortName: _currentUser.shortName, name: _currentUser.name);
     } else {
-      debugPrint("User has not changed, continue with current registration");
+      debugPrint('User has not changed, continue with current registration');
     }
   }
 
   _saveUser(String name, String shortName) async {
     SharedPreferences settings = await SharedPreferences.getInstance();
-    settings.setString("name", name);
-    settings.setString("shortName", shortName);
+    settings.setString('name', name);
+    settings.setString('shortName', shortName);
   }
 
   @override
@@ -157,12 +161,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("displaying ${_chats.length} chats");
     var selChatId =
         _current.chat == NOT_SELECTED ? NO_CHAT_ID : _chats[_current.chat].id;
     var filteredPosts = _posts.where((_p) => _p.chatId == selChatId);
     var filteredCount = filteredPosts.length;
-    debugPrint("displaying $filteredCount posts");
     final isDesktop = isDisplayDesktop(context);
     if (isDesktop) {
       return Scaffold(
@@ -317,8 +319,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     var name = _currentUser.name;
     var shortName = _currentUser.shortName;
     String title = !compact
-        ? "$shortName ($name) ${!_registered ? '* not logged in yet' : 'online'}"
-        : "$shortName ${!_registered ? '* not logged in' : 'online'}";
+        ? '$shortName ($name) ${!_registered ? '* not logged in yet' : 'online'}'
+        : '$shortName ${!_registered ? '* not logged in' : 'online'}';
     return AppBar(
       title: Text(title),
       actions: [
@@ -329,25 +331,25 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               _newChatNameInProgress = true;
             });
           },
-          tooltip: "Create new chat",
+          tooltip: 'Create new chat',
         ),
         IconButton(
           icon: const Icon(Icons.search),
           onPressed: onSearchInChats,
-          tooltip: "Search through all chats",
+          tooltip: 'Search through all chats',
         ),
         IconButton(
             icon: _onlyFavorites
                 ? const Icon(Icons.favorite)
                 : const Icon(Icons.favorite_border),
             onPressed: onToggleFavourites,
-            tooltip: "Display only favourites"),
+            tooltip: 'Display only favourites'),
         IconButton(
           icon: const Icon(Icons.logout),
           onPressed: () {
             _changeUser();
           },
-          tooltip: "Switch current user",
+          tooltip: 'Switch current user',
         ),
       ],
     );
@@ -407,7 +409,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       maxLines: 1,
       decoration: const InputDecoration(
         icon: Icon(Icons.chat),
-        helperText: "Submit empty name to cancel",
+        helperText: 'Submit empty name to cancel',
         labelText: 'New chat name *',
         hintText: 'How to display new chat in list',
         // enabledBorder: UnderlineInputBorder(
@@ -430,7 +432,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         chatId: _chats[_current.chat].id,
         status: PostStatus.UNKNOWN);
 
-    debugPrint("new outgoing post ${post.text.trim()} -> display stream");
+    debugPrint('new outgoing post ${post.text.trim()} -> display stream');
     _addPost(post);
 
     // async send message to the server
@@ -505,13 +507,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   /// 'outgoing message sent to the server' event
   void onSendPostOk(OutgoingPostModel post) {
-    debugPrint("post \"${post.text.trim()}\" sent to the server");
+    debugPrint('post "${post.text.trim()}" sent to the server');
   }
 
   /// 'failed to send message' event
   void onSendPostError(PostModel message, String error) {
     debugPrint(
-        "FAILED to send message \"${message.text.trim()}\" to the server: $error");
+        'FAILED to send message "${message.text.trim()}" to the server: $error');
   }
 
   void onCreateChatOk(Chat chat) {
@@ -522,7 +524,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   void onCreateChatError(String name, String error) {
-    debugPrint("FAILED to create chat: $error");
+    debugPrint('FAILED to create chat: $error');
   }
 
   void onUsersUpdated(UpdateUsers update) {
@@ -571,20 +573,19 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   void onInvitation(Invitation invitation) {
     debugPrint(
-        "invitation received from ${invitation.fromUserId} to ${invitation.chatId}, accepting");
+        'invitation received from ${invitation.fromUserId} to ${invitation.chatId}, accepting');
     _service.enterChat(invitation.chatId.toInt());
     _invitationsStreamController.add(invitation);
   }
 
   /// 'failed to receive messages' event
   void onRecvError(String error) {
-    debugPrint("FAILED to receive messages from the server: $error");
+    debugPrint('FAILED to receive messages from the server: $error');
   }
 
   /// 'new incoming message received from the server' event
   void onPost(Post post) {
-    debugPrint(
-        'post \"${post.text.trim()}\" from the server --> display stream');
+    debugPrint('post "${post.text.trim()}" from the server --> display stream');
     _addPost(PostModel.from(post));
     setState(() {});
   }

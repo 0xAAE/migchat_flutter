@@ -37,7 +37,7 @@ class _PostComposerState extends State<PostComposerWidget> {
                   });
                 },
                 onSubmitted: _inProgress ? _onSubmit : null,
-                decoration: InputDecoration.collapsed(hintText: "Send a post"),
+                decoration: InputDecoration.collapsed(hintText: 'Send a post'),
               ),
             ),
             Container(
