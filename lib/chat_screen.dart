@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fixnum/fixnum.dart';
 
 import 'chat_model.dart';
 import 'chat_widget.dart';
@@ -517,7 +518,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   void onCreateChatOk(Chat chat) {
-    _addChats(<Chat>[chat]);
+    _addChats(<ChatUpdate>[ChatUpdate(chat: chat, currentlyPosts: Int64(0))]);
     var createdId = chat.id.toInt();
     _current.chat = _chats.indexWhere((c) => c.id == createdId);
     setState(() {});
@@ -658,14 +659,14 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     }
   }
 
-  void _addChats(List<Chat> chats) {
-    chats.forEach((chat) {
+  void _addChats(List<ChatUpdate> updates) {
+    updates.forEach((update) {
       // check if chat widget with the same ID already exists
-      var i = _chats.indexWhere((item) => item.id == chat.id.toInt());
+      var i = _chats.indexWhere((item) => item.id == update.chat.id.toInt());
       if (i != NOT_FOUND) {
-        _chats[i].userIds = chat.users.map((v) => v.toInt()).toList();
+        _chats[i].userIds = update.chat.users.map((v) => v.toInt()).toList();
       } else {
-        _chats.insert(0, ChatModel.from(chat, userShortName, chatName));
+        _chats.insert(0, ChatModel.from(update, userShortName, chatName));
       }
     });
   }

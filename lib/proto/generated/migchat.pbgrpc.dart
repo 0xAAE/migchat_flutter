@@ -61,6 +61,11 @@ class ChatRoomServiceClient extends $grpc.Client {
       '/migchat.ChatRoomService/LeaveChat',
       ($0.ChatReference value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.Result.fromBuffer(value));
+  static final _$getChatHistory =
+      $grpc.ClientMethod<$0.HistoryParams, $0.ChatHistory>(
+          '/migchat.ChatRoomService/GetChatHistory',
+          ($0.HistoryParams value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) => $0.ChatHistory.fromBuffer(value));
 
   ChatRoomServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -128,6 +133,11 @@ class ChatRoomServiceClient extends $grpc.Client {
   $grpc.ResponseFuture<$0.Result> leaveChat($0.ChatReference request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$leaveChat, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ChatHistory> getChatHistory($0.HistoryParams request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getChatHistory, request, options: options);
   }
 }
 
@@ -212,6 +222,13 @@ abstract class ChatRoomServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.ChatReference.fromBuffer(value),
         ($0.Result value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.HistoryParams, $0.ChatHistory>(
+        'GetChatHistory',
+        getChatHistory_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.HistoryParams.fromBuffer(value),
+        ($0.ChatHistory value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.RegistrationInfo> register_Pre(
@@ -269,6 +286,11 @@ abstract class ChatRoomServiceBase extends $grpc.Service {
     return leaveChat(call, await request);
   }
 
+  $async.Future<$0.ChatHistory> getChatHistory_Pre(
+      $grpc.ServiceCall call, $async.Future<$0.HistoryParams> request) async {
+    return getChatHistory(call, await request);
+  }
+
   $async.Future<$0.RegistrationInfo> register(
       $grpc.ServiceCall call, $0.UserInfo request);
   $async.Future<$0.Result> logout(
@@ -290,4 +312,6 @@ abstract class ChatRoomServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.ChatReference request);
   $async.Future<$0.Result> leaveChat(
       $grpc.ServiceCall call, $0.ChatReference request);
+  $async.Future<$0.ChatHistory> getChatHistory(
+      $grpc.ServiceCall call, $0.HistoryParams request);
 }

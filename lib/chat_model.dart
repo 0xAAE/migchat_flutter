@@ -16,19 +16,21 @@ class ChatModel {
   DateTime created;
   ResolveUserName resolveUserName;
   ResolveChatName resolveChatName;
+  int historyDelayed;
   bool _viewed = false;
 
   /// Class constructors
 
-  ChatModel.from(Chat chat, ResolveUserName resolveUserName,
+  ChatModel.from(ChatUpdate update, ResolveUserName resolveUserName,
       ResolveChatName resolveChatName)
-      : id = chat.id.toInt(),
-        permanent = chat.permanent,
-        description = chat.description,
-        userIds = chat.users.map((v) => v.toInt()).toList(),
-        created =
-            DateTime.fromMillisecondsSinceEpoch(chat.created.toInt() * 1000),
+      : id = update.chat.id.toInt(),
+        permanent = update.chat.permanent,
+        description = update.chat.description,
+        userIds = update.chat.users.map((v) => v.toInt()).toList(),
+        created = DateTime.fromMillisecondsSinceEpoch(
+            update.chat.created.toInt() * 1000),
         invitations = <InvitationModel>[],
+        historyDelayed = update.currentlyPosts.toInt(),
         resolveUserName = resolveUserName,
         resolveChatName = resolveChatName;
 
