@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:migchat_flutter/chat_widget.dart';
 import 'package:migchat_flutter/chat_model.dart';
+import 'package:migchat_flutter/post_model.dart';
 import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 import 'package:fixnum/fixnum.dart';
+//import 'package:migchat_flutter/proto/generated/migchat.pbjson.dart';
 
 String resolveUserName(int id) {
   return 'User<${id.toString()}>';
@@ -11,6 +13,10 @@ String resolveUserName(int id) {
 
 String resolveChatName(int id) {
   return 'Chat<${id.toString()}>';
+}
+
+List<PostModel> historyLoader(int chatId, int idxFrom, int count) {
+  return [PostModel.from(Post())];
 }
 
 void main() {
@@ -21,19 +27,27 @@ void main() {
   const String DESCRIPTION = 'chat description';
   const int CREATED = 1234567;
   const bool PERMANENT = true;
+  const int HISTORY = 77;
   //DateTime created = DateTime.fromMillisecondsSinceEpoch(CREATED * 1000);
 
   testWidgets('ChatWidget displays name, short name and letter',
       (WidgetTester tester) async {
     ChatModel model = ChatModel.from(
-        Chat(
-            id: Int64(ID),
-            permanent: PERMANENT,
-            description: DESCRIPTION,
-            users: <Int64>[Int64(USER0_ID), Int64(USER1_ID), Int64(USER2_ID)],
-            created: Int64(CREATED)),
+        ChatUpdate(
+            chat: Chat(
+                id: Int64(ID),
+                permanent: PERMANENT,
+                description: DESCRIPTION,
+                users: <Int64>[
+                  Int64(USER0_ID),
+                  Int64(USER1_ID),
+                  Int64(USER2_ID)
+                ],
+                created: Int64(CREATED)),
+            currentlyPosts: Int64(HISTORY)),
         resolveUserName,
-        resolveChatName);
+        resolveChatName,
+        historyLoader);
     var animationController = AnimationController(
       duration: Duration(milliseconds: 0),
       vsync: tester,

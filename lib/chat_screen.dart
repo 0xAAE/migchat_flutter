@@ -19,6 +19,7 @@ import 'layout/adaptive.dart';
 
 typedef String ResolveUserName(int userId);
 typedef String ResolveChatName(int chatId);
+typedef List<PostModel> HistoryLoader(int chatId, int idxFrom, int count);
 
 const String NO_NAME = '?';
 
@@ -44,14 +45,13 @@ class Selection {
 
 /// State for ChatScreen widget
 class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
-  /// Chat client service
+  /// gRPC client service
   late ChatService _service;
 
-  /// Chat posts list to display into ListView
-  final List<PostModel> _posts = <PostModel>[];
-
+  // known users
   final List<UserModel> _users = <UserModel>[];
 
+  // existing chats
   final List<ChatModel> _chats = <ChatModel>[];
 
   final StreamController _invitationsStreamController =
@@ -71,7 +71,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    // initialize Chat client service
+    // initialize gRPC client service
     _service = ChatService(
         onRegistered: (int idUser, DateTime created) {
           setState(() {
@@ -100,7 +100,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       _current.reset();
       _chats.clear();
       _users.clear();
-      _posts.clear();
+      //_posts.clear();
     });
   }
 
@@ -162,10 +162,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    var selChatId =
-        _current.chat == NOT_SELECTED ? NO_CHAT_ID : _chats[_current.chat].id;
-    var filteredPosts = _posts.where((_p) => _p.chatId == selChatId);
-    var filteredCount = filteredPosts.length;
     final isDesktop = isDisplayDesktop(context);
     if (isDesktop) {
       return Scaffold(
@@ -187,17 +183,21 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     ],
                   )),
               const VerticalDivider(width: 1),
-              Expanded(
-                  child: _buildBodyWidget(
-                      context, _current.chatSelected, filteredPosts)),
+              if (_current.chat != NOT_SELECTED)
+                Expanded(
+                    child: _buildBodyWidget(
+                        context, _current.chatSelected, _chats[_current.chat])),
             ],
           ));
     } else {
       return Scaffold(
         appBar: _buildAppBar(compact: true),
-        body: _buildBodyWidget(context, _current.chatSelected, filteredPosts,
-            chatTitle: _current.chatSelected,
-            newChatName: _newChatNameInProgress),
+        body: _current.chat != NOT_SELECTED
+            ? _buildBodyWidget(
+                context, _current.chatSelected, _chats[_current.chat],
+                chatTitle: _current.chatSelected,
+                newChatName: _newChatNameInProgress)
+            : Text("Select chat to duisplay"),
         drawer: _buildChatsDrawer(context, _chats, _current,
             autoHide: true, withHeader: true),
         // floatingActionButton: FloatingActionButton(
@@ -359,7 +359,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   Widget _buildBodyWidget(
     BuildContext context,
     bool enableComposer,
-    Iterable<PostModel> posts, {
+    ChatModel chat, {
     bool chatTitle = false,
     bool newChatName = false,
   }) {
@@ -388,8 +388,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             padding: EdgeInsets.all(8.0),
             reverse: true,
             itemBuilder: (_, int index) =>
-                _buildPostWidget(posts.elementAt(index)),
-            itemCount: posts.length),
+                _buildPostWidget(chat.getPost(index)),
+            itemCount: chat.totalPosts),
       ),
       // --------------------
       Divider(height: 1.0),
@@ -506,6 +506,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     }
   }
 
+  List<PostModel> loadChatHistory(int chatId, int idxFrom, int count) {
+    return [];
+  }
+
   /// 'outgoing message sent to the server' event
   void onSendPostOk(OutgoingPostModel post) {
     debugPrint('post "${post.text.trim()}" sent to the server');
@@ -596,19 +600,26 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void _addPost(PostModel post) {
     debugPrint(
         'new ${post.id == NO_POST_ID ? 'unconfirmed' : ''} post to display, "${post.text.trim()}"');
+    var idxChat = _chats.indexWhere((c) => c.id == post.chatId);
+    if (idxChat == NOT_FOUND) {
+      debugPrint('proto violation, received post from inknown chat, ignoring');
+      return;
+    }
+    var postChat = _chats[idxChat];
     if (post.id == NO_POST_ID) {
       if (post.userId != _currentUser.id) {
         debugPrint('proto violation, get incoming post without ID, ignoring');
       } else {
         // test if it is already seen before
-        var i = _posts.indexWhere((_p) =>
+        var i = postChat.posts.indexWhere((_p) =>
             _p.userId == post.userId &&
             _p.chatId == post.chatId &&
             _p.text == post.text);
         if (i == NOT_FOUND) {
           // own post which is still unknown
           setState(() {
-            _posts.insert(0, OutgoingPostModel.from(post, PostStatus.UNKNOWN));
+            postChat.posts
+                .insert(0, OutgoingPostModel.from(post, PostStatus.UNKNOWN));
           });
           debugPrint('recent unconfirmed outgoing post added to  display');
         } else {
@@ -618,9 +629,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     } else {
       // post with actual ID
       // test if duplicated
-      if (_posts.indexWhere((_p) => _p.id == post.id) == NOT_FOUND) {
+      if (postChat.posts.indexWhere((_p) => _p.id == post.id) == NOT_FOUND) {
         // test if there is our recent post
-        var iNoIdYet = _posts.indexWhere((_p) =>
+        var iNoIdYet = postChat.posts.indexWhere((_p) =>
             _p.id == NO_POST_ID &&
             _p.userId == _currentUser.id &&
             _p.chatId == post.chatId &&
@@ -628,7 +639,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         if (iNoIdYet != NOT_FOUND) {
           // found own recent post, update only id & status
           setState(() {
-            var upd = _posts[iNoIdYet];
+            var upd = postChat.posts[iNoIdYet];
             upd.id = upd.id;
             // must be outgoing post, update status
             assert(upd is OutgoingPostModel);
@@ -641,13 +652,14 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           if (post.userId == _currentUser.id) {
             // own post which is still unknown
             setState(() {
-              _posts.insert(0, OutgoingPostModel.from(post, PostStatus.SENT));
+              postChat.posts
+                  .insert(0, OutgoingPostModel.from(post, PostStatus.SENT));
             });
             debugPrint('recent outgoing added to display');
           } else {
             // other's post
             setState(() {
-              _posts.insert(0, post);
+              postChat.posts.insert(0, post);
             });
             debugPrint('incoming post added to display');
           }
@@ -666,7 +678,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       if (i != NOT_FOUND) {
         _chats[i].userIds = update.chat.users.map((v) => v.toInt()).toList();
       } else {
-        _chats.insert(0, ChatModel.from(update, userShortName, chatName));
+        _chats.insert(0,
+            ChatModel.from(update, userShortName, chatName, loadChatHistory));
       }
     });
   }

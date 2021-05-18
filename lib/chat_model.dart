@@ -1,11 +1,15 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 import 'package:migchat_flutter/user_model.dart';
 import 'package:intl/intl.dart';
 import 'invitation_model.dart';
 import 'chat_screen.dart';
+import 'post_model.dart';
 
 const int NO_CHAT_ID = 0;
+const int HISTORY_PAGE_LENGTH = 10;
 
 class ChatModel {
   int id;
@@ -16,13 +20,15 @@ class ChatModel {
   DateTime created;
   ResolveUserName resolveUserName;
   ResolveChatName resolveChatName;
+  HistoryLoader historyLoader;
   int historyDelayed;
   bool _viewed = false;
+  final List<PostModel> posts = <PostModel>[];
 
   /// Class constructors
 
   ChatModel.from(ChatUpdate update, ResolveUserName resolveUserName,
-      ResolveChatName resolveChatName)
+      ResolveChatName resolveChatName, HistoryLoader historyLoader)
       : id = update.chat.id.toInt(),
         permanent = update.chat.permanent,
         description = update.chat.description,
@@ -32,7 +38,8 @@ class ChatModel {
         invitations = <InvitationModel>[],
         historyDelayed = update.currentlyPosts.toInt(),
         resolveUserName = resolveUserName,
-        resolveChatName = resolveChatName;
+        resolveChatName = resolveChatName,
+        historyLoader = historyLoader;
 
   invitedBy(UserModel user) {
     invitations.add(InvitationModel(from: user.id));
@@ -59,6 +66,40 @@ class ChatModel {
   }
 
   String get createdText => _formatCreated();
+
+  append(PostModel post) {
+    posts.insert(0, post);
+  }
+
+  int get totalPosts => posts.length + historyDelayed;
+
+  PostModel getPost(int idx) {
+    var max = totalPosts;
+    if (idx >= max) {
+      throw RangeError.range(idx, 0, max - 1);
+    }
+    if (max - idx < HISTORY_PAGE_LENGTH && historyDelayed > 0) {
+      var toLoad = min(HISTORY_PAGE_LENGTH, historyDelayed);
+      debugPrint('loading $toLoad older posts from $historyDelayed');
+      var loaded =
+          historyLoader(id, historyDelayed - toLoad, HISTORY_PAGE_LENGTH);
+      var length = loaded.length;
+      assert(toLoad == length);
+      debugPrint('loaded $length posts');
+      posts.addAll(loaded);
+      if (historyDelayed > length) {
+        historyDelayed -= length;
+        if (historyDelayed > 0) {
+          debugPrint('$historyDelayed older posts are unreceived yet');
+        }
+      } else {
+        debugPrint('loaded length $length exceeds expected $historyDelayed');
+        historyDelayed = 0;
+      }
+    }
+    assert(idx >= posts.length);
+    return posts[idx];
+  }
 }
 
 abstract class ChatViewModel extends Widget {
