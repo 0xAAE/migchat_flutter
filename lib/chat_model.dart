@@ -81,20 +81,21 @@ class ChatModel {
     if (idx > posts.length - HISTORY_PAGE_LENGTH && historyDelayed > 0) {
       var toLoad = min(HISTORY_PAGE_LENGTH, historyDelayed);
       debugPrint(
-          'loading $toLoad most recent old posts ($historyDelayed is available)');
+          '$name: loading $toLoad most recent old posts ($historyDelayed is available)');
       var loaded =
           historyLoader(id, historyDelayed - toLoad, HISTORY_PAGE_LENGTH);
       var length = loaded.length;
       assert(toLoad == length);
-      debugPrint('$length posts were loaded');
+      debugPrint('$name: $length posts were loaded');
       posts.addAll(loaded);
       if (historyDelayed > length) {
         historyDelayed -= length;
         if (historyDelayed > 0) {
-          debugPrint('$historyDelayed older posts are unreceived yet');
+          debugPrint('$name: $historyDelayed older posts are unreceived yet');
         }
       } else {
-        debugPrint('loaded length $length exceeds expected $historyDelayed');
+        debugPrint(
+            '$name: loaded length $length exceeds expected $historyDelayed');
         historyDelayed = 0;
       }
     }
