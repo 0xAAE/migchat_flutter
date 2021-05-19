@@ -1,20 +1,8 @@
 import 'package:migchat_flutter/chat_model.dart';
-import 'package:migchat_flutter/post_model.dart';
+import 'mock.dart';
 import 'package:test/test.dart';
 import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 import 'package:fixnum/fixnum.dart';
-
-String resolveUserName(int id) {
-  return 'User<${id.toString()}>';
-}
-
-String resolveChatName(int id) {
-  return 'Chat<${id.toString()}>';
-}
-
-List<PostModel> historyLoader(int chatId, int idxFrom, int count) {
-  return [PostModel.from(Post())];
-}
 
 void main() {
   const int USER0_ID = 0;
@@ -28,6 +16,7 @@ void main() {
   const int HISTORY = 77;
 
   test('ChatModel.from(chat) has to be equal to its source', () {
+    var mock = ChatScreenServicesMock(0);
     ChatUpdate update = ChatUpdate(
         chat: Chat(
             id: Int64(ID),
@@ -36,8 +25,8 @@ void main() {
             users: <Int64>[Int64(USER0_ID), Int64(USER1_ID), Int64(USER2_ID)],
             created: Int64(CREATED)),
         currentlyPosts: Int64(HISTORY));
-    ChatModel model =
-        ChatModel.from(update, resolveUserName, resolveChatName, historyLoader);
+    ChatModel model = ChatModel.from(
+        update, mock.resolveUserName, mock.resolveChatName, mock.historyLoader);
 
     expect(model.id, ID);
     expect(model.permanent, PERMANENT);
@@ -50,16 +39,18 @@ void main() {
   });
 
   test('ChatModel must return !viewed only once', () {
-    ChatModel model = ChatModel.from(
-        ChatUpdate(), resolveUserName, resolveChatName, historyLoader);
+    var mock = ChatScreenServicesMock(0);
+    ChatModel model = ChatModel.from(ChatUpdate(), mock.resolveUserName,
+        mock.resolveChatName, mock.historyLoader);
     expect(model.viewed, false);
     expect(model.viewed, true);
     expect(model.viewed, true);
   });
 
   test('ChatModel is constructable from empty chat', () {
-    ChatModel model = ChatModel.from(
-        ChatUpdate(), resolveUserName, resolveChatName, historyLoader);
+    var mock = ChatScreenServicesMock(0);
+    ChatModel model = ChatModel.from(ChatUpdate(), mock.resolveUserName,
+        mock.resolveChatName, mock.historyLoader);
     expect(model.id, 0);
     expect(model.permanent, false);
     expect(model.description, '');
@@ -69,6 +60,29 @@ void main() {
     expect(model.viewed, false);
     expect(model.members, '');
     expect(model.historyDelayed, 0);
-    expect(model.name, resolveChatName(0));
+    expect(model.name, mock.resolveChatName(0));
+  });
+
+  test('ChatModel handles the chat history', () {
+    var mock = ChatScreenServicesMock(HISTORY);
+    ChatUpdate update = ChatUpdate(
+        chat: Chat(
+            id: Int64(ID),
+            permanent: PERMANENT,
+            description: DESCRIPTION,
+            users: <Int64>[Int64(USER0_ID), Int64(USER1_ID), Int64(USER2_ID)],
+            created: Int64(CREATED)),
+        currentlyPosts: Int64(HISTORY));
+    ChatModel model = ChatModel.from(
+        update, mock.resolveUserName, mock.resolveChatName, mock.historyLoader);
+
+    expect(model.totalPosts, HISTORY);
+    expect(model.historyDelayed, HISTORY);
+    for (var i = 0; i < HISTORY; i++) {
+      var postModel = model.getPost(i);
+      expect(postModel.id, HISTORY - i);
+    }
+    expect(model.totalPosts, HISTORY);
+    expect(model.historyDelayed, 0);
   });
 }

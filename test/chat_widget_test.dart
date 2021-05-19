@@ -2,22 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:migchat_flutter/chat_widget.dart';
 import 'package:migchat_flutter/chat_model.dart';
-import 'package:migchat_flutter/post_model.dart';
+import 'mock.dart';
 import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 import 'package:fixnum/fixnum.dart';
 //import 'package:migchat_flutter/proto/generated/migchat.pbjson.dart';
-
-String resolveUserName(int id) {
-  return 'User<${id.toString()}>';
-}
-
-String resolveChatName(int id) {
-  return 'Chat<${id.toString()}>';
-}
-
-List<PostModel> historyLoader(int chatId, int idxFrom, int count) {
-  return [PostModel.from(Post())];
-}
 
 void main() {
   const int USER0_ID = 0;
@@ -32,6 +20,7 @@ void main() {
 
   testWidgets('ChatWidget displays name, short name and letter',
       (WidgetTester tester) async {
+    var mock = ChatScreenServicesMock(0);
     ChatModel model = ChatModel.from(
         ChatUpdate(
             chat: Chat(
@@ -45,9 +34,9 @@ void main() {
                 ],
                 created: Int64(CREATED)),
             currentlyPosts: Int64(HISTORY)),
-        resolveUserName,
-        resolveChatName,
-        historyLoader);
+        mock.resolveUserName,
+        mock.resolveChatName,
+        mock.historyLoader);
     var animationController = AnimationController(
       duration: Duration(milliseconds: 0),
       vsync: tester,

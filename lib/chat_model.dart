@@ -78,14 +78,15 @@ class ChatModel {
     if (idx >= max) {
       throw RangeError.range(idx, 0, max - 1);
     }
-    if (max - idx < HISTORY_PAGE_LENGTH && historyDelayed > 0) {
+    if (idx > posts.length - HISTORY_PAGE_LENGTH && historyDelayed > 0) {
       var toLoad = min(HISTORY_PAGE_LENGTH, historyDelayed);
-      debugPrint('loading $toLoad older posts from $historyDelayed');
+      debugPrint(
+          'loading $toLoad most recent old posts ($historyDelayed is available)');
       var loaded =
           historyLoader(id, historyDelayed - toLoad, HISTORY_PAGE_LENGTH);
       var length = loaded.length;
       assert(toLoad == length);
-      debugPrint('loaded $length posts');
+      debugPrint('$length posts were loaded');
       posts.addAll(loaded);
       if (historyDelayed > length) {
         historyDelayed -= length;
@@ -97,7 +98,7 @@ class ChatModel {
         historyDelayed = 0;
       }
     }
-    assert(idx >= posts.length);
+    assert(idx < posts.length);
     return posts[idx];
   }
 }
