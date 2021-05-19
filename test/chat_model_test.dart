@@ -76,13 +76,18 @@ void main() {
     ChatModel model = ChatModel.from(
         update, mock.resolveUserName, mock.resolveChatName, mock.historyLoader);
 
+    // test overall posts counting
     expect(model.totalPosts, HISTORY);
+    // and particularly history
     expect(model.historyDelayed, HISTORY);
     for (var i = 0; i < HISTORY; i++) {
       var postModel = model.getPost(i);
+      // test that posts arrive in reverse order, from recent to older one
       expect(postModel.id, HISTORY - i);
     }
+    // test that iterating through all the posts doesn't affect the total posts count
     expect(model.totalPosts, HISTORY);
+    // test that iterating through all the posts forces downloading them
     expect(model.historyDelayed, 0);
   });
 }
