@@ -20,7 +20,7 @@ void main() {
 
   testWidgets('ChatWidget displays name, short name and letter',
       (WidgetTester tester) async {
-    var mock = ChatScreenServicesMock(0);
+    var mock = ChatScreenServicesMock(0, USER1_ID);
     ChatModel model = ChatModel.from(
         ChatUpdate(
             chat: Chat(
@@ -34,9 +34,7 @@ void main() {
                 ],
                 created: Int64(CREATED)),
             currentlyPosts: Int64(HISTORY)),
-        mock.resolveUserName,
-        mock.resolveChatName,
-        mock.historyLoader);
+        mock);
     var animationController = AnimationController(
       duration: Duration(milliseconds: 0),
       vsync: tester,

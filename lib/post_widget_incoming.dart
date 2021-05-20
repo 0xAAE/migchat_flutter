@@ -29,30 +29,38 @@ class IncomingPostWidget extends StatelessWidget implements PostViewModel {
       axisAlignment: 0.0,
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 10.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+        child: !model.isStub
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text('$author (${model.createdText})',
-                      style: Theme.of(context).textTheme.overline),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: <Widget>[
+                        Text('$author (${model.createdText})',
+                            style: Theme.of(context).textTheme.overline),
+                        Container(
+                          margin: EdgeInsets.only(top: 5.0),
+                          child: Text(model.text),
+                        ),
+                      ],
+                    ),
+                  ),
                   Container(
-                    margin: EdgeInsets.only(top: 5.0),
-                    child: Text(model.text),
+                    margin: EdgeInsets.only(left: 16.0),
+                    child: CircleAvatar(
+                        backgroundColor: Colors.pink.shade600,
+                        child: Text(author[0])),
                   ),
                 ],
+              )
+            : Container(
+                width: double.infinity,
+                child: Text(
+                  "Post is not loaded yet",
+                  textAlign: TextAlign.end,
+                ),
               ),
-            ),
-            Container(
-              margin: EdgeInsets.only(left: 16.0),
-              child: CircleAvatar(
-                  backgroundColor: Colors.pink.shade600,
-                  child: Text(author[0])),
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 import 'package:intl/intl.dart';
 
 const String NOT_SET = "?";
+const int NO_USER_ID = 0;
 
 /// Message is class defining message data (id and text)
 class UserModel {
