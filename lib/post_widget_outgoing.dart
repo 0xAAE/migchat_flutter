@@ -86,36 +86,44 @@ class OutgoingPostState extends State<OutgoingPostWidget> {
       axisAlignment: 0.0,
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 10.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Container(
-              margin: EdgeInsets.only(right: 16.0),
-              child: CircleAvatar(child: Text(name[0])),
-            ),
-            Expanded(
-              child: Column(
+        child: !controller.model.isStub
+            ? Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text('$name (${controller.model.createdText})',
-                      style: Theme.of(context).textTheme.overline),
                   Container(
-                    margin: EdgeInsets.only(top: 5.0),
-                    child: Text(
-                      controller.model.text,
-                      style: TextStyle(color: textColor),
+                    margin: EdgeInsets.only(right: 16.0),
+                    child: CircleAvatar(child: Text(name[0])),
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text('$name (${controller.model.createdText})',
+                            style: Theme.of(context).textTheme.overline),
+                        Container(
+                          margin: EdgeInsets.only(top: 5.0),
+                          child: Text(
+                            controller.model.text,
+                            style: TextStyle(color: textColor),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  Container(
+                    child: Icon(controller.model.status == PostStatus.SENT
+                        ? Icons.done
+                        : Icons.access_time),
+                  ),
                 ],
+              )
+            : Container(
+                width: double.infinity,
+                child: Text(
+                  "Post is not loaded yet",
+                  textAlign: TextAlign.end,
+                ),
               ),
-            ),
-            Container(
-              child: Icon(controller.model.status == PostStatus.SENT
-                  ? Icons.done
-                  : Icons.access_time),
-            ),
-          ],
-        ),
       ),
     );
   }

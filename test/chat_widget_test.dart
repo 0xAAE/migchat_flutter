@@ -2,16 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:migchat_flutter/chat_widget.dart';
 import 'package:migchat_flutter/chat_model.dart';
+import 'mock.dart';
 import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 import 'package:fixnum/fixnum.dart';
-
-String resolveUserName(int id) {
-  return 'User<${id.toString()}>';
-}
-
-String resolveChatName(int id) {
-  return 'Chat<${id.toString()}>';
-}
+//import 'package:migchat_flutter/proto/generated/migchat.pbjson.dart';
 
 void main() {
   const int USER0_ID = 0;
@@ -21,19 +15,26 @@ void main() {
   const String DESCRIPTION = 'chat description';
   const int CREATED = 1234567;
   const bool PERMANENT = true;
+  const int HISTORY = 77;
   //DateTime created = DateTime.fromMillisecondsSinceEpoch(CREATED * 1000);
 
   testWidgets('ChatWidget displays name, short name and letter',
       (WidgetTester tester) async {
+    var mock = ChatScreenServicesMock(0, USER1_ID);
     ChatModel model = ChatModel.from(
-        Chat(
-            id: Int64(ID),
-            permanent: PERMANENT,
-            description: DESCRIPTION,
-            users: <Int64>[Int64(USER0_ID), Int64(USER1_ID), Int64(USER2_ID)],
-            created: Int64(CREATED)),
-        resolveUserName,
-        resolveChatName);
+        ChatUpdate(
+            chat: Chat(
+                id: Int64(ID),
+                permanent: PERMANENT,
+                description: DESCRIPTION,
+                users: <Int64>[
+                  Int64(USER0_ID),
+                  Int64(USER1_ID),
+                  Int64(USER2_ID)
+                ],
+                created: Int64(CREATED)),
+            currentlyPosts: Int64(HISTORY)),
+        mock);
     var animationController = AnimationController(
       duration: Duration(milliseconds: 0),
       vsync: tester,

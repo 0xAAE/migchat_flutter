@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:grpc/grpc.dart';
+import 'dart:async';
 
 import 'proto/generated/migchat.pbgrpc.dart' as grpc;
 import 'post_model.dart';
@@ -375,7 +378,7 @@ class ChatService {
             if (e.codeName == 'ALREADY_EXISTS') {
               debugPrint('already in the chat');
             } else {
-              debugPrint('failed enter chat, ${e.message}');
+              debugPrint('failed to enter chat, ${e.message}');
             }
           } else {
             Future.delayed(Duration(seconds: 30), () {
@@ -442,7 +445,7 @@ class ChatService {
           .catchError((e) {
         if (!_isShutdown) {
           if (e is GrpcError) {
-            debugPrint('failed create chat, ${e.message}');
+            debugPrint('failed to create dialog, ${e.message}');
           } else {
             Future.delayed(Duration(seconds: 30), () {
               if (!_isShutdown) {
@@ -453,5 +456,21 @@ class ChatService {
         }
       });
     }
+  }
+
+  loadChatHistory(
+      int chatId, int idxFrom, int count, List<PostModel> result) async {
+    var request = grpc.HistoryParams(
+        chatId: Int64(chatId), idxFrom: Int64(idxFrom), count: Int64(count));
+    await grpc.ChatRoomServiceClient(_getSender())
+        .getChatHistory(request)
+        .then((reply) {
+      for (var post in reply.posts) {
+        result.add(PostModel.from(post));
+      }
+    }).catchError((e) {
+      debugPrint(
+          'failed to fetch chat history [$idxFrom .. ${idxFrom + count}), ${e.message}');
+    });
   }
 }

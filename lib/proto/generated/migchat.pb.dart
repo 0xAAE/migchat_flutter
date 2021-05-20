@@ -331,16 +331,79 @@ class User extends $pb.GeneratedMessage {
   void clearCreated() => clearField(4);
 }
 
+class ChatUpdate extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChatUpdate', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'migchat'), createEmptyInstance: create)
+    ..aOM<Chat>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'chat', subBuilder: Chat.create)
+    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentlyPosts', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..hasRequiredFields = false
+  ;
+
+  ChatUpdate._() : super();
+  factory ChatUpdate({
+    Chat? chat,
+    $fixnum.Int64? currentlyPosts,
+  }) {
+    final _result = create();
+    if (chat != null) {
+      _result.chat = chat;
+    }
+    if (currentlyPosts != null) {
+      _result.currentlyPosts = currentlyPosts;
+    }
+    return _result;
+  }
+  factory ChatUpdate.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ChatUpdate.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ChatUpdate clone() => ChatUpdate()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ChatUpdate copyWith(void Function(ChatUpdate) updates) => super.copyWith((message) => updates(message as ChatUpdate)) as ChatUpdate; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ChatUpdate create() => ChatUpdate._();
+  ChatUpdate createEmptyInstance() => create();
+  static $pb.PbList<ChatUpdate> createRepeated() => $pb.PbList<ChatUpdate>();
+  @$core.pragma('dart2js:noInline')
+  static ChatUpdate getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ChatUpdate>(create);
+  static ChatUpdate? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Chat get chat => $_getN(0);
+  @$pb.TagNumber(1)
+  set chat(Chat v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasChat() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearChat() => clearField(1);
+  @$pb.TagNumber(1)
+  Chat ensureChat() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get currentlyPosts => $_getI64(1);
+  @$pb.TagNumber(2)
+  set currentlyPosts($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCurrentlyPosts() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCurrentlyPosts() => clearField(2);
+}
+
 class UpdateChats extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateChats', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'migchat'), createEmptyInstance: create)
-    ..pc<Chat>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updated', $pb.PbFieldType.PM, subBuilder: Chat.create)
+    ..pc<ChatUpdate>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updated', $pb.PbFieldType.PM, subBuilder: ChatUpdate.create)
     ..p<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gone', $pb.PbFieldType.PU6)
     ..hasRequiredFields = false
   ;
 
   UpdateChats._() : super();
   factory UpdateChats({
-    $core.Iterable<Chat>? updated,
+    $core.Iterable<ChatUpdate>? updated,
     $core.Iterable<$fixnum.Int64>? gone,
   }) {
     final _result = create();
@@ -374,7 +437,7 @@ class UpdateChats extends $pb.GeneratedMessage {
   static UpdateChats? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<Chat> get updated => $_getList(0);
+  $core.List<ChatUpdate> get updated => $_getList(0);
 
   @$pb.TagNumber(2)
   $core.List<$fixnum.Int64> get gone => $_getList(1);
@@ -955,5 +1018,121 @@ class Post extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(9)
   $core.List<Attachment> get attachments => $_getList(5);
+}
+
+class HistoryParams extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'HistoryParams', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'migchat'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'chatId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idxFrom', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'count', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..hasRequiredFields = false
+  ;
+
+  HistoryParams._() : super();
+  factory HistoryParams({
+    $fixnum.Int64? chatId,
+    $fixnum.Int64? idxFrom,
+    $fixnum.Int64? count,
+  }) {
+    final _result = create();
+    if (chatId != null) {
+      _result.chatId = chatId;
+    }
+    if (idxFrom != null) {
+      _result.idxFrom = idxFrom;
+    }
+    if (count != null) {
+      _result.count = count;
+    }
+    return _result;
+  }
+  factory HistoryParams.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory HistoryParams.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  HistoryParams clone() => HistoryParams()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  HistoryParams copyWith(void Function(HistoryParams) updates) => super.copyWith((message) => updates(message as HistoryParams)) as HistoryParams; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static HistoryParams create() => HistoryParams._();
+  HistoryParams createEmptyInstance() => create();
+  static $pb.PbList<HistoryParams> createRepeated() => $pb.PbList<HistoryParams>();
+  @$core.pragma('dart2js:noInline')
+  static HistoryParams getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<HistoryParams>(create);
+  static HistoryParams? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get chatId => $_getI64(0);
+  @$pb.TagNumber(1)
+  set chatId($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasChatId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearChatId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get idxFrom => $_getI64(1);
+  @$pb.TagNumber(2)
+  set idxFrom($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasIdxFrom() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearIdxFrom() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get count => $_getI64(2);
+  @$pb.TagNumber(3)
+  set count($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCount() => clearField(3);
+}
+
+class ChatHistory extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChatHistory', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'migchat'), createEmptyInstance: create)
+    ..pc<Post>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'posts', $pb.PbFieldType.PM, subBuilder: Post.create)
+    ..hasRequiredFields = false
+  ;
+
+  ChatHistory._() : super();
+  factory ChatHistory({
+    $core.Iterable<Post>? posts,
+  }) {
+    final _result = create();
+    if (posts != null) {
+      _result.posts.addAll(posts);
+    }
+    return _result;
+  }
+  factory ChatHistory.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ChatHistory.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ChatHistory clone() => ChatHistory()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ChatHistory copyWith(void Function(ChatHistory) updates) => super.copyWith((message) => updates(message as ChatHistory)) as ChatHistory; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ChatHistory create() => ChatHistory._();
+  ChatHistory createEmptyInstance() => create();
+  static $pb.PbList<ChatHistory> createRepeated() => $pb.PbList<ChatHistory>();
+  @$core.pragma('dart2js:noInline')
+  static ChatHistory getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ChatHistory>(create);
+  static ChatHistory? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<Post> get posts => $_getList(0);
 }
 

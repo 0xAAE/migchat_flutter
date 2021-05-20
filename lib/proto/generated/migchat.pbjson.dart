@@ -79,17 +79,28 @@ const User$json = const {
 
 /// Descriptor for `User`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List userDescriptor = $convert.base64Decode('CgRVc2VyEg4KAmlkGAEgASgEUgJpZBISCgRuYW1lGAIgASgJUgRuYW1lEh0KCnNob3J0X25hbWUYAyABKAlSCXNob3J0TmFtZRIYCgdjcmVhdGVkGAQgASgEUgdjcmVhdGVk');
+@$core.Deprecated('Use chatUpdateDescriptor instead')
+const ChatUpdate$json = const {
+  '1': 'ChatUpdate',
+  '2': const [
+    const {'1': 'chat', '3': 1, '4': 1, '5': 11, '6': '.migchat.Chat', '10': 'chat'},
+    const {'1': 'currently_posts', '3': 2, '4': 1, '5': 4, '10': 'currentlyPosts'},
+  ],
+};
+
+/// Descriptor for `ChatUpdate`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List chatUpdateDescriptor = $convert.base64Decode('CgpDaGF0VXBkYXRlEiEKBGNoYXQYASABKAsyDS5taWdjaGF0LkNoYXRSBGNoYXQSJwoPY3VycmVudGx5X3Bvc3RzGAIgASgEUg5jdXJyZW50bHlQb3N0cw==');
 @$core.Deprecated('Use updateChatsDescriptor instead')
 const UpdateChats$json = const {
   '1': 'UpdateChats',
   '2': const [
-    const {'1': 'updated', '3': 1, '4': 3, '5': 11, '6': '.migchat.Chat', '10': 'updated'},
+    const {'1': 'updated', '3': 1, '4': 3, '5': 11, '6': '.migchat.ChatUpdate', '10': 'updated'},
     const {'1': 'gone', '3': 2, '4': 3, '5': 4, '10': 'gone'},
   ],
 };
 
 /// Descriptor for `UpdateChats`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateChatsDescriptor = $convert.base64Decode('CgtVcGRhdGVDaGF0cxInCgd1cGRhdGVkGAEgAygLMg0ubWlnY2hhdC5DaGF0Ugd1cGRhdGVkEhIKBGdvbmUYAiADKARSBGdvbmU=');
+final $typed_data.Uint8List updateChatsDescriptor = $convert.base64Decode('CgtVcGRhdGVDaGF0cxItCgd1cGRhdGVkGAEgAygLMhMubWlnY2hhdC5DaGF0VXBkYXRlUgd1cGRhdGVkEhIKBGdvbmUYAiADKARSBGdvbmU=');
 @$core.Deprecated('Use chatInfoDescriptor instead')
 const ChatInfo$json = const {
   '1': 'ChatInfo',
@@ -179,3 +190,25 @@ const Post$json = const {
 
 /// Descriptor for `Post`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List postDescriptor = $convert.base64Decode('CgRQb3N0Eg4KAmlkGAEgASgEUgJpZBIXCgd1c2VyX2lkGAIgASgEUgZ1c2VySWQSFwoHY2hhdF9pZBgDIAEoBFIGY2hhdElkEhIKBHRleHQYBCABKAlSBHRleHQSGAoHY3JlYXRlZBgFIAEoBFIHY3JlYXRlZBI1CgthdHRhY2htZW50cxgJIAMoCzITLm1pZ2NoYXQuQXR0YWNobWVudFILYXR0YWNobWVudHM=');
+@$core.Deprecated('Use historyParamsDescriptor instead')
+const HistoryParams$json = const {
+  '1': 'HistoryParams',
+  '2': const [
+    const {'1': 'chat_id', '3': 1, '4': 1, '5': 4, '10': 'chatId'},
+    const {'1': 'idx_from', '3': 2, '4': 1, '5': 4, '10': 'idxFrom'},
+    const {'1': 'count', '3': 3, '4': 1, '5': 4, '10': 'count'},
+  ],
+};
+
+/// Descriptor for `HistoryParams`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List historyParamsDescriptor = $convert.base64Decode('Cg1IaXN0b3J5UGFyYW1zEhcKB2NoYXRfaWQYASABKARSBmNoYXRJZBIZCghpZHhfZnJvbRgCIAEoBFIHaWR4RnJvbRIUCgVjb3VudBgDIAEoBFIFY291bnQ=');
+@$core.Deprecated('Use chatHistoryDescriptor instead')
+const ChatHistory$json = const {
+  '1': 'ChatHistory',
+  '2': const [
+    const {'1': 'posts', '3': 1, '4': 3, '5': 11, '6': '.migchat.Post', '10': 'posts'},
+  ],
+};
+
+/// Descriptor for `ChatHistory`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List chatHistoryDescriptor = $convert.base64Decode('CgtDaGF0SGlzdG9yeRIjCgVwb3N0cxgBIAMoCzINLm1pZ2NoYXQuUG9zdFIFcG9zdHM=');

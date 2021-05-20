@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:migchat_flutter/chat_model.dart';
+import 'package:migchat_flutter/user_model.dart';
 import 'package:migchat_flutter/proto/generated/migchat.pb.dart';
 import 'package:intl/intl.dart';
+
+const int NO_POST_ID = 0;
 
 /// Message is class defining message data (id and text)
 class PostModel {
@@ -28,6 +32,13 @@ class PostModel {
         created =
             DateTime.fromMillisecondsSinceEpoch(post.created.toInt() * 1000);
 
+  PostModel.stub()
+      : chatId = NO_CHAT_ID,
+        userId = NO_USER_ID,
+        created = DateTime.fromMillisecondsSinceEpoch(0),
+        id = NO_POST_ID,
+        text = '';
+
   bool _viewOnce() {
     if (_viewed) {
       return true;
@@ -43,14 +54,14 @@ class PostModel {
   }
 
   String get createdText => _formatCreated();
+
+  bool get isStub => (id == NO_POST_ID) && (chatId == NO_CHAT_ID);
 }
 
 /// Outgoing message statuses
 /// UNKNOWN - message just created and is not sent yet
 /// SENT - message is sent to the server successfully
 enum PostStatus { UNKNOWN, SENT, RETRYING }
-
-const int NO_POST_ID = 0;
 
 /// MessageOutgoing is class defining message data (id and text) and status
 class OutgoingPostModel extends PostModel {
